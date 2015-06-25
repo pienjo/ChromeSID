@@ -1,0 +1,79 @@
+sidplayfp/c64/mmu.lo: sidplayfp/c64/mmu.cpp /usr/include/stdc-predef.h \
+ sidplayfp/c64/mmu.h /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h \
+ /usr/include/stdint.h /usr/include/features.h \
+ /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+ /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h sidplayfp/event.h \
+ sidplayfp/siddefs.h sidplayfp/sidendian.h config.h sidplayfp/sidmemory.h \
+ sidplayfp/c64/Banks/Bank.h sidplayfp/c64/Banks/SystemRAMBank.h \
+ /usr/include/c++/4.8/cstring \
+ /usr/include/x86_64-linux-gnu/c++/4.8/bits/c++config.h \
+ /usr/include/x86_64-linux-gnu/c++/4.8/bits/os_defines.h \
+ /usr/include/x86_64-linux-gnu/c++/4.8/bits/cpu_defines.h \
+ /usr/include/string.h /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h \
+ /usr/include/xlocale.h /usr/include/x86_64-linux-gnu/bits/string3.h \
+ sidplayfp/c64/Banks/Bank.h sidplayfp/c64/Banks/SystemROMBanks.h \
+ sidplayfp/c64/CPU/opcodes.h sidplayfp/c64/Banks/ZeroRAMBank.h \
+ sidplayfp/c64/Banks/SystemRAMBank.h
+
+/usr/include/stdc-predef.h:
+
+sidplayfp/c64/mmu.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h:
+
+/usr/include/stdint.h:
+
+/usr/include/features.h:
+
+/usr/include/x86_64-linux-gnu/sys/cdefs.h:
+
+/usr/include/x86_64-linux-gnu/bits/wordsize.h:
+
+/usr/include/x86_64-linux-gnu/gnu/stubs.h:
+
+/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
+
+/usr/include/x86_64-linux-gnu/bits/wchar.h:
+
+sidplayfp/event.h:
+
+sidplayfp/siddefs.h:
+
+sidplayfp/sidendian.h:
+
+config.h:
+
+sidplayfp/sidmemory.h:
+
+sidplayfp/c64/Banks/Bank.h:
+
+sidplayfp/c64/Banks/SystemRAMBank.h:
+
+/usr/include/c++/4.8/cstring:
+
+/usr/include/x86_64-linux-gnu/c++/4.8/bits/c++config.h:
+
+/usr/include/x86_64-linux-gnu/c++/4.8/bits/os_defines.h:
+
+/usr/include/x86_64-linux-gnu/c++/4.8/bits/cpu_defines.h:
+
+/usr/include/string.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/x86_64-linux-gnu/bits/string3.h:
+
+sidplayfp/c64/Banks/Bank.h:
+
+sidplayfp/c64/Banks/SystemROMBanks.h:
+
+sidplayfp/c64/CPU/opcodes.h:
+
+sidplayfp/c64/Banks/ZeroRAMBank.h:
+
+sidplayfp/c64/Banks/SystemRAMBank.h:

@@ -1,0 +1,101 @@
+sidplayfp/psiddrv.lo: sidplayfp/psiddrv.cpp /usr/include/stdc-predef.h \
+ sidplayfp/psiddrv.h /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h \
+ /usr/include/stdint.h /usr/include/features.h \
+ /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+ /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h sidplayfp/sidendian.h \
+ config.h sidplayfp/sidmemory.h sidplayfp/SidTuneInfo.h \
+ sidplayfp/reloc65.h sidplayfp/c64/CPU/mos6510.h \
+ /usr/include/c++/4.8/cstdio \
+ /usr/include/x86_64-linux-gnu/c++/4.8/bits/c++config.h \
+ /usr/include/x86_64-linux-gnu/c++/4.8/bits/os_defines.h \
+ /usr/include/x86_64-linux-gnu/c++/4.8/bits/cpu_defines.h \
+ /usr/include/stdio.h /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h \
+ /usr/include/x86_64-linux-gnu/bits/types.h \
+ /usr/include/x86_64-linux-gnu/bits/typesizes.h /usr/include/libio.h \
+ /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdarg.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/sys_errlist.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio2.h sidplayfp/c64/CPU/flags.h \
+ sidplayfp/EventScheduler.h sidplayfp/event.h sidplayfp/siddefs.h \
+ sidplayfp/psiddrv.bin sidplayfp/poweron.bin
+
+/usr/include/stdc-predef.h:
+
+sidplayfp/psiddrv.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h:
+
+/usr/include/stdint.h:
+
+/usr/include/features.h:
+
+/usr/include/x86_64-linux-gnu/sys/cdefs.h:
+
+/usr/include/x86_64-linux-gnu/bits/wordsize.h:
+
+/usr/include/x86_64-linux-gnu/gnu/stubs.h:
+
+/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
+
+/usr/include/x86_64-linux-gnu/bits/wchar.h:
+
+sidplayfp/sidendian.h:
+
+config.h:
+
+sidplayfp/sidmemory.h:
+
+sidplayfp/SidTuneInfo.h:
+
+sidplayfp/reloc65.h:
+
+sidplayfp/c64/CPU/mos6510.h:
+
+/usr/include/c++/4.8/cstdio:
+
+/usr/include/x86_64-linux-gnu/c++/4.8/bits/c++config.h:
+
+/usr/include/x86_64-linux-gnu/c++/4.8/bits/os_defines.h:
+
+/usr/include/x86_64-linux-gnu/c++/4.8/bits/cpu_defines.h:
+
+/usr/include/stdio.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h:
+
+/usr/include/x86_64-linux-gnu/bits/types.h:
+
+/usr/include/x86_64-linux-gnu/bits/typesizes.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdarg.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdio_lim.h:
+
+/usr/include/x86_64-linux-gnu/bits/sys_errlist.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdio.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:
+
+sidplayfp/c64/CPU/flags.h:
+
+sidplayfp/EventScheduler.h:
+
+sidplayfp/event.h:
+
+sidplayfp/siddefs.h:
+
+sidplayfp/psiddrv.bin:
+
+sidplayfp/poweron.bin:

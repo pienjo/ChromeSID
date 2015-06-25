@@ -1,0 +1,8 @@
+sidplayfp/c64/CPU/mos6510debug.lo: sidplayfp/c64/CPU/mos6510debug.cpp \
+ /usr/include/stdc-predef.h sidplayfp/c64/CPU/mos6510debug.h config.h
+
+/usr/include/stdc-predef.h:
+
+sidplayfp/c64/CPU/mos6510debug.h:
+
+config.h:
