@@ -5,8 +5,13 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 TARGET=sidplayfp
 LIBS=ppapi_cpp ppapi
 
-CFLAGS=-Wall -I $(CURDIR) -I $(CURDIR)/sidplayfp -DHAVE_CONFIG_H
-SOURCES = sidplayfp/sidplayfp.cpp
+CFLAGS=-Wall -Wno-unused-private-field -I $(CURDIR) -I $(CURDIR)/sidplayfp -DHAVE_CONFIG_H
+SOURCES = \
+sidplayfp/config.cpp \
+sidplayfp/EventScheduler.cpp \
+sidplayfp/player.cpp \
+sidplayfp/psiddrv.cpp \
+sidplayfp/sidplayfp.cpp
 
 $(foreach src, $(SOURCES), $(eval $(call COMPILE_RULE, $(src), $(CFLAGS))))
 
