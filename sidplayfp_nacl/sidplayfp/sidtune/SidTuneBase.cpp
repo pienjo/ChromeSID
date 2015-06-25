@@ -45,7 +45,7 @@
 // Error and status message strings.
 const char ERR_EMPTY[]               = "SIDTUNE ERROR: No data to load";
 const char ERR_UNRECOGNIZED_FORMAT[] = "SIDTUNE ERROR: Could not determine file format";
-const char ERR_NOT_ENOUGH_MEMORY[]   = "SIDTUNE ERROR: Not enough free memory";
+//const char ERR_NOT_ENOUGH_MEMORY[]   = "SIDTUNE ERROR: Not enough free memory";
 const char ERR_CANT_LOAD_FILE[]      = "SIDTUNE ERROR: Could not load input file";
 const char ERR_CANT_OPEN_FILE[]      = "SIDTUNE ERROR: Could not open file for binary input";
 const char ERR_FILE_TOO_LONG[]       = "SIDTUNE ERROR: Input data too long";

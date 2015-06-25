@@ -36,7 +36,7 @@ const char TXT_FORMAT_STR[]        = "C64 Stereo Sidplayer format (MUS+STR)";
 
 const char ERR_INVALID[]           = "ERROR: File contains invalid data";
 const char ERR_2ND_INVALID[]       = "ERROR: 2nd file contains invalid data";
-const char ERR_NOT_ENOUGH_MEMORY[] = "ERROR: Not enough free memory";
+//const char ERR_NOT_ENOUGH_MEMORY[] = "ERROR: Not enough free memory";
 const char ERR_SIZE_EXCEEDED[]     = "ERROR: Total file size too large";
 
 static const uint_least16_t SIDTUNE_MUS_HLT_CMD = 0x14F;
