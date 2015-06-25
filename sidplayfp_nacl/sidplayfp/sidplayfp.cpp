@@ -34,84 +34,84 @@
 #include "player.h"
 
 sidplayfp::sidplayfp() :
-    sidplayer(*(new SIDPLAYFP_NAMESPACE::Player)) {}
+    sidplayer(new SIDPLAYFP_NAMESPACE::Player) {}
 
 sidplayfp::~sidplayfp()
 {
-    if (&sidplayer) delete &sidplayer;
+    delete sidplayer;
 }
 
 bool sidplayfp::config(const SidConfig &cfg)
 {
-    return sidplayer.config(cfg);
+    return sidplayer->config(cfg);
 }
 
 const SidConfig &sidplayfp::config() const
 {
-    return sidplayer.config();
+    return sidplayer->config();
 }
 
 void sidplayfp::stop()
 {
-    sidplayer.stop();
+    sidplayer->stop();
 }
 
 uint_least32_t sidplayfp::play(short *buffer, uint_least32_t count)
 {
-    return sidplayer.play(buffer, count);
+    return sidplayer->play(buffer, count);
 }
 
 bool sidplayfp::load(SidTune *tune)
 {
-    return sidplayer.load(tune);
+    return sidplayer->load(tune);
 }
 
 const SidInfo &sidplayfp::info() const
 {
-    return sidplayer.info();
+    return sidplayer->info();
 }
 
 uint_least32_t sidplayfp::time() const
 {
-    return sidplayer.time();
+    return sidplayer->time();
 }
 
 const char *sidplayfp::error() const
 {
-    return sidplayer.error();
+    return sidplayer->error();
 }
 
 bool  sidplayfp::fastForward(unsigned int percent)
 {
-    return sidplayer.fastForward(percent);
+    return sidplayer->fastForward(percent);
 }
 
 void sidplayfp::mute(unsigned int sidNum, unsigned int voice, bool enable)
 {
-    sidplayer.mute(sidNum, voice, enable);
+    sidplayer->mute(sidNum, voice, enable);
 }
 
 void sidplayfp::debug(bool enable, FILE *out)
 {
-    sidplayer.debug(enable, out);
+    sidplayer->debug(enable, out);
 }
 
 bool sidplayfp::isPlaying() const
 {
-    return sidplayer.isPlaying();
+    return sidplayer->isPlaying();
 }
 
 void sidplayfp::setRoms(const uint8_t* kernal, const uint8_t* basic, const uint8_t* character)
 {
-    sidplayer.setRoms(kernal, basic, character);
+    sidplayer->setRoms(kernal, basic, character);
 }
 
 EventContext *sidplayfp::getEventContext()
 {
-    return sidplayer.getEventScheduler();
+    return sidplayer->getEventScheduler();
 }
 
 uint_least16_t sidplayfp::getCia1TimerA() const
 {
-    return sidplayer.getCia1TimerA();
+    return sidplayer->getCia1TimerA();
 }

@@ -46,7 +46,7 @@ namespace SIDPLAYFP_NAMESPACE
 class SID_EXTERN sidplayfp
 {
 private:
-    SIDPLAYFP_NAMESPACE::Player &sidplayer;
+    SIDPLAYFP_NAMESPACE::Player *sidplayer;
 
 public:
     sidplayfp();
