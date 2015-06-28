@@ -36,10 +36,14 @@ utils/SidDatabase.cpp \
 utils/MD5/MD5.cpp \
 sidplayfp_nacl.cpp
 
-$(foreach src, $(SOURCES), $(eval $(call COMPILE_RULE, $(src), $(CFLAGS))))
+$(foreach src, $(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
 
-$(eval $(call LINK_RULE, $(TARGET)_unstripped, $(SOURCES), $(LIBS), $(DEPS)))
-$(eval $(call STRIP_RULE, $(TARGET), $(TARGET)_unstripped))
+ifneq (,$(or $(findstring pnacl,$(TOOlCHAIN)),$(findstring Release,$(CONFIG))))
+$(eval $(call LINK_RULE,$(TARGET)_unstripped,$(SOURCES),$(LIBS),$(DEPS)))
+$(eval $(call STRIP_RULE,$(TARGET),$(TARGET)_unstripped))
+else
+$(eval $(call LINK_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
+endif
 
-$(eval $(call NMF_RULE, $(TARGET),))
+$(eval $(call NMF_RULE,$(TARGET),))
 
