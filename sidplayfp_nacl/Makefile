@@ -31,8 +31,6 @@ sidplayfp/sidtune/prg.cpp \
 sidplayfp/sidtune/PSID.cpp \
 sidplayfp/sidtune/SidTuneBase.cpp \
 sidplayfp/sidtune/SidTuneTools.cpp \
-utils/iniParser.cpp \
-utils/SidDatabase.cpp \
 utils/MD5/MD5.cpp \
 sidplayfp_nacl.cpp
 
