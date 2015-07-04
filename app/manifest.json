@@ -1,15 +1,15 @@
 {
   "manifest_version": 2,
-  "name": "Codelab_TodoMVC",
+  "name": "ChromeSID",
   "version": "1",
   "icons":{
     "128": "icon_128.png"
   },
-  "permissions": ["storage", "alarms", "notifications", "webview", "<all_urls>"],
+  "permissions": ["fileSystem"],
   "app": {
     "background": {
-      "scripts": [ "js/store.js", "js/model.js", "background.js"]
+      "scripts": [ "background.js"]
     }
   },
-  "minimum_chrome_version":"28"
+  "minimum_chrome_version":"43"
 }

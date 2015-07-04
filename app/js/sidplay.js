@@ -1,9 +1,10 @@
 (function (window) {
+  'use strict';
   
   function Sidplay(container_selector) {
     var that = this;
     
-    this._pluginLocation = "../sidplayfp_nacl/pnacl/Release";
+    this._pluginLocation = ".";
     this._pluginName = "sidplayfp.nmf";
     this._transactions = [];
     this.$containerElement = document.querySelector(container_selector);
@@ -76,7 +77,12 @@
   Sidplay.prototype.GetInfo = function(callback) {
     this._sendCommand("info", null, callback);
   };
+  
+  Sidplay.prototype.Load = function(contents, callback) {
+    this._sendCommand("load", { contents : contents }, callback);
+  };
+  
   // Export to window
   window.app = window.app || {};
-  window.app.sidplay = Sidplay;
+  window.app.Sidplay = Sidplay;
 })(window);
