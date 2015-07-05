@@ -16,7 +16,7 @@ class SidplayfpInstance : public pp::Instance
     virtual ~SidplayfpInstance();
     
     // Entry point of messages
-    virtual void HandleMessage(const pp::Var &var_message);
+    virtual void HandleMessage(const pp::Var &var_message) override;
     
   private:
     

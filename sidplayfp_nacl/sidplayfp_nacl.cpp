@@ -2,6 +2,7 @@
 #include "sidplayfp/SidInfo.h"
 #include "sidplayfp/SidTune.h"
 #include "sidplayfp/SidTuneInfo.h"
+#include "LockFreeQueue.h"
 
 #include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/cpp/var_array_buffer.h"
