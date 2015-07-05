@@ -1,24 +1,29 @@
 (function (window) {
   'use strict';
-  function MainModel(player) {
-    this.$player = player;
-    this.tuneInfo = undefined;
-    this.tuneFilename = undefined;
+  function MainModel(player, template) {
+    this._player = player;
+    this._template = template;
+    
+    this._tuneInfo = undefined;
+    this._tuneFilename = undefined;
   }
   
   MainModel.prototype.Load = function(filename, contents, callback) {
     callback = callback || function() { };
     var that = this;
     
-    this.$player.Load( contents, function(infoObj) {
-            that.tuneFilename = filename;
-            that.tuneInfo = infoObj;
-            callback();
+    this._player.Load( contents, function(infoObj) {
+            that._tuneFilename = filename;
+            that._tuneInfo = infoObj;
+            callback({
+                "filename" : filename,
+                "subtunes" : that._template.showSubtunes(infoObj.songs)
+              });
           });
   };
   
   MainModel.prototype.GetInfo = function(callback) {
-    this.$player.GetInfo(callback);
+    this._player.GetInfo(callback);
   };
   
   // Export to window

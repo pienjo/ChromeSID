@@ -27,7 +27,7 @@
     
     this._storage.LoadFile(function (filename, contents) {
       that._model.Load(filename, contents, function(tuneInfo) {
-        that._view.RenderTuneInfo(that._model.tuneFilename, that._model.tuneInfo);
+        that._view.RenderTuneInfo(tuneInfo);
       });
     });
   };
