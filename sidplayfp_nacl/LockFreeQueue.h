@@ -1,9 +1,11 @@
+#ifndef __LOCKFREEQUEUE_H__
+#define __LOCKFREEQUEUE_H__
 // Based on Herb Sutter's article on Dr Dobbs: 
 // "Writing Lock-free code: A corrected queue"
 //
 // http://www.drdobbs.com/parallel/writing-lock-free-code-a-corrected-queue/210604448?
-
 #include <atomic>
+
 
 template <typename T>
 class LockFreeQueue
@@ -28,27 +30,35 @@ class LockFreeQueue
 	
   	Node *mFirst; // Producer only
 		Node *mFree; // Producer only
-
-		uint32_t mBuffersInUse;
+		std::atomic<uint32_t> mBuffersInUse;
 		uint32_t mBufferSize;
 
 		std::atomic<Node *> mDivider, mLast; // shared
 
 	public:
-		LockFreeQueue( uint32_t pQueueLength) 
+		LockFreeQueue() 
 			: mFree(nullptr)
 			, mBuffersInUse(0)
-			, mBufferSize(pQueueLength)
+			, mBufferSize(0)
 		{
 			mFirst = mDivider = mLast = new Node; // create dummy separator
-			
+		}
+		
+		uint32_t BuffersInUse() const { return mBuffersInUse; }
+		uint32_t BufferSize() const { return mBufferSize; }
+
+		template<typename Func>
+		void Init(uint32_t pQueueLength, Func initFunc)
+		{
 			// Create free list
 			for (uint32_t i = 0; i < pQueueLength; ++i)
 			{
 				Node *tmp = new Node;
+				initFunc(&tmp->mValue);
 				tmp->mNext = mFree;
 				mFree = tmp;
 			}
+			mBufferSize += pQueueLength;
 		}
 
 		~LockFreeQueue()
@@ -56,7 +66,7 @@ class LockFreeQueue
 			mDivider = nullptr;
 
 			// Transfer any remainder of the queue to the free list
-			mLast->mNext = mFree;
+			((Node *)mLast)->mNext = mFree;
 			mFree = mFirst;
 			mFirst = nullptr;
 
@@ -110,7 +120,7 @@ class LockFreeQueue
 		{
 			if (mDivider != mLast) // Safe; mLast may be updated but never backs up
 			{
-				return mDivider->mNext->mValue;
+				return &(( (Node *)mDivider)->mNext->mValue);
 			}
 
 			return nullptr;
@@ -121,8 +131,8 @@ class LockFreeQueue
 			if (mDivider != mLast) // Safe; mLast may be updated but never backs up
 			{
 				// queue nonempty		
-				mDivider = mDivider->mNext; // Pubish consumption.
+				mDivider =  ((Node *)mDivider)->mNext; // Pubish consumption.
 			}
 		}
 };
-
+#endif
