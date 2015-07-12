@@ -9,9 +9,11 @@
 #include "rom/basic_rom.c"
 #include "rom/chargen_rom.c"
 #include "rom/kernal_rom.c"
-
+#include "math.h"
+#include <string.h>
 
 SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(instance)
+	, mAudio(nullptr)
 {
   // Load ROM images.
   mEngine.setRoms(kernal_rom, basic_rom, chargen_rom);
@@ -24,6 +26,7 @@ SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(insta
 
 SidplayfpInstance::~SidplayfpInstance()
 {
+	delete mAudio; mAudio = nullptr;
 }
 
 void SidplayfpInstance::HandleMessage(const pp::Var &var_message)
@@ -48,7 +51,53 @@ void SidplayfpInstance::HandleMessage(const pp::Var &var_message)
   PostMessage(var_reply);
 }
 
-    
+// Called by browser to initialize the embedded module. 
+// argc: Number of arguments supplied in <embed> tag
+// argn/argv: key/value pair for every argument.
+bool SidplayfpInstance::Init(uint32_t argc, const char *argn[], const char *argv[])
+{
+	// Retrieve recommended sample frame count
+	
+	mSampleSize = pp::AudioConfig::RecommendSampleFrameCount(this,PP_AUDIOSAMPLERATE_44100, 16384); // Try to use a large frame count. 16384 samples @ 44100 KHz corresponds to about 370 ms. 
+
+	// Allocate a buffer of 10 sec.
+	int32_t nrBuffers = ceil(441000. / (double)mSampleSize);
+	
+	mPlaybackQueue.Init(nrBuffers, [this](AudioQueueEntry *entry)
+	{
+		entry->mData = new uint16_t[ 2 * mSampleSize ] ; // For left and right
+	} );
+
+	// Create audio resource
+	mAudio = new pp::Audio(this, pp::AudioConfig(this, PP_AUDIOSAMPLERATE_44100, mSampleSize),
+												 GetAudioDataCallback, this);
+
+	// Don't start playing audio until specifically requested. 
+	return true;
+}
+
+// Callback from browser: Supply data.
+void SidplayfpInstance::GetAudioData(uint16_t *pSamples, uint32_t buffer_size)
+{
+	if (buffer_size > mSampleSize)
+	{
+		// This will generate noise :-/
+		buffer_size = mSampleSize;
+	}
+
+	AudioQueueEntry *queueEntry = mPlaybackQueue.GetConsumptionBuffer();
+	if (!queueEntry)
+	{
+		// No data available. Generate silence
+		memset(pSamples, 0, buffer_size * 2 * sizeof(uint16_t));
+	}
+	else
+	{
+		memcpy(pSamples, queueEntry->mData, 2 * buffer_size * sizeof(uint16_t));
+		mPlaybackQueue.PublishConsumption();
+	}
+}
+
 pp::Var SidplayfpInstance::HandleInfo(const pp::Var &)
 {
   pp::VarDictionary returnValue;
@@ -77,6 +126,12 @@ pp::Var SidplayfpInstance::HandleInfo(const pp::Var &)
   romInfo.Set("basic", info.basicDesc());
   romInfo.Set("chargen", info.chargenDesc());
   returnValue.Set("romInfo", romInfo);
+
+	// Retrieve audio status
+	pp::VarDictionary audioInfo;
+	audioInfo.Set("sampleSize", (int)mSampleSize);
+	audioInfo.Set("bufferSize", (int)mPlaybackQueue.BufferSize());
+	audioInfo.Set("bufferUsage", (int)mPlaybackQueue.BuffersInUse());
 
   return returnValue;
 }
