@@ -97,8 +97,8 @@ class LockFreeQueue
 			mFree = mFree->mNext;
 			mBuffersInUse++;
 
-			mLast->mNext = produceNode; // Add new item to queue
-			mLast = mLast->mNext; // Publish 
+			((Node *)(mLast))->mNext = produceNode; // Add new item to queue
+			mLast = ((Node *)(mLast))->mNext; // Publish 
 
 			// Trim items that have been consumed
 			while (mFirst != mDivider) // Safe, mDivider is only moved forward by consumer, 
