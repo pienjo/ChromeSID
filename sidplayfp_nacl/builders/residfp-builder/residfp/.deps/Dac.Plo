@@ -1,0 +1,7 @@
+builders/residfp-builder/residfp/Dac.lo: \
+ builders/residfp-builder/residfp/Dac.cpp /usr/include/stdc-predef.h \
+ builders/residfp-builder/residfp/Dac.h
+
+/usr/include/stdc-predef.h:
+
+builders/residfp-builder/residfp/Dac.h:

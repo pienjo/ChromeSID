@@ -1,0 +1,11 @@
+builders/residfp-builder/residfp/ExternalFilter.lo: \
+ builders/residfp-builder/residfp/ExternalFilter.cpp \
+ /usr/include/stdc-predef.h \
+ builders/residfp-builder/residfp/ExternalFilter.h \
+ builders/residfp-builder/residfp/siddefs-fp.h
+
+/usr/include/stdc-predef.h:
+
+builders/residfp-builder/residfp/ExternalFilter.h:
+
+builders/residfp-builder/residfp/siddefs-fp.h:

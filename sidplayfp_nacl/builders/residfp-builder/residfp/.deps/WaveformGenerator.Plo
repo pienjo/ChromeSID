@@ -1,0 +1,17 @@
+builders/residfp-builder/residfp/WaveformGenerator.lo: \
+ builders/residfp-builder/residfp/WaveformGenerator.cpp \
+ /usr/include/stdc-predef.h \
+ builders/residfp-builder/residfp/WaveformGenerator.h \
+ builders/residfp-builder/residfp/siddefs-fp.h \
+ builders/residfp-builder/residfp/array.h \
+ builders/residfp-builder/residfp/Dac.h
+
+/usr/include/stdc-predef.h:
+
+builders/residfp-builder/residfp/WaveformGenerator.h:
+
+builders/residfp-builder/residfp/siddefs-fp.h:
+
+builders/residfp-builder/residfp/array.h:
+
+builders/residfp-builder/residfp/Dac.h:

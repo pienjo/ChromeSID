@@ -1,0 +1,7 @@
+builders/residfp-builder/residfp/Filter.lo: \
+ builders/residfp-builder/residfp/Filter.cpp /usr/include/stdc-predef.h \
+ builders/residfp-builder/residfp/Filter.h
+
+/usr/include/stdc-predef.h:
+
+builders/residfp-builder/residfp/Filter.h:

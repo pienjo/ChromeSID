@@ -1,0 +1,13 @@
+builders/resid-builder/resid/extfilt.lo: \
+ builders/resid-builder/resid/extfilt.cc /usr/include/stdc-predef.h \
+ builders/resid-builder/resid/extfilt.h \
+ builders/resid-builder/resid/resid-config.h \
+ builders/resid-builder/resid/siddefs.h
+
+/usr/include/stdc-predef.h:
+
+builders/resid-builder/resid/extfilt.h:
+
+builders/resid-builder/resid/resid-config.h:
+
+builders/resid-builder/resid/siddefs.h:

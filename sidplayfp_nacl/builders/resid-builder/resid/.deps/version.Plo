@@ -1,0 +1,10 @@
+builders/resid-builder/resid/version.lo: \
+ builders/resid-builder/resid/version.cc /usr/include/stdc-predef.h \
+ builders/resid-builder/resid/resid-config.h \
+ builders/resid-builder/resid/siddefs.h
+
+/usr/include/stdc-predef.h:
+
+builders/resid-builder/resid/resid-config.h:
+
+builders/resid-builder/resid/siddefs.h:

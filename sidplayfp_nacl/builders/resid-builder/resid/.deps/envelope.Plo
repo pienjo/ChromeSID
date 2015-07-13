@@ -1,0 +1,16 @@
+builders/resid-builder/resid/envelope.lo: \
+ builders/resid-builder/resid/envelope.cc /usr/include/stdc-predef.h \
+ builders/resid-builder/resid/envelope.h \
+ builders/resid-builder/resid/resid-config.h \
+ builders/resid-builder/resid/siddefs.h \
+ builders/resid-builder/resid/dac.h
+
+/usr/include/stdc-predef.h:
+
+builders/resid-builder/resid/envelope.h:
+
+builders/resid-builder/resid/resid-config.h:
+
+builders/resid-builder/resid/siddefs.h:
+
+builders/resid-builder/resid/dac.h:

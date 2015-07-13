@@ -1,0 +1,7 @@
+builders/residfp-builder/residfp/version.lo: \
+ builders/residfp-builder/residfp/version.cc /usr/include/stdc-predef.h \
+ builders/residfp-builder/residfp/siddefs-fp.h
+
+/usr/include/stdc-predef.h:
+
+builders/residfp-builder/residfp/siddefs-fp.h:

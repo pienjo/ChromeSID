@@ -1,0 +1,14 @@
+builders/residfp-builder/residfp/EnvelopeGenerator.lo: \
+ builders/residfp-builder/residfp/EnvelopeGenerator.cpp \
+ /usr/include/stdc-predef.h \
+ builders/residfp-builder/residfp/EnvelopeGenerator.h \
+ builders/residfp-builder/residfp/siddefs-fp.h \
+ builders/residfp-builder/residfp/Dac.h
+
+/usr/include/stdc-predef.h:
+
+builders/residfp-builder/residfp/EnvelopeGenerator.h:
+
+builders/residfp-builder/residfp/siddefs-fp.h:
+
+builders/residfp-builder/residfp/Dac.h:

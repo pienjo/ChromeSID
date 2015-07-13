@@ -1,0 +1,19 @@
+builders/resid-builder/resid/voice.lo: \
+ builders/resid-builder/resid/voice.cc /usr/include/stdc-predef.h \
+ builders/resid-builder/resid/voice.h \
+ builders/resid-builder/resid/resid-config.h \
+ builders/resid-builder/resid/siddefs.h \
+ builders/resid-builder/resid/wave.h \
+ builders/resid-builder/resid/envelope.h
+
+/usr/include/stdc-predef.h:
+
+builders/resid-builder/resid/voice.h:
+
+builders/resid-builder/resid/resid-config.h:
+
+builders/resid-builder/resid/siddefs.h:
+
+builders/resid-builder/resid/wave.h:
+
+builders/resid-builder/resid/envelope.h:
