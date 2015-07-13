@@ -11,22 +11,75 @@
 #include "rom/kernal_rom.c"
 #include "math.h"
 #include <string.h>
+#include <chrono>
 
 SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(instance)
 	, mAudio(nullptr)
+	, mDestructing(false)
+	, mSidBuilder("ChromeSID")
 {
   // Load ROM images.
   mEngine.setRoms(kernal_rom, basic_rom, chargen_rom);
-  
+
+	// Configure the engine
+	mSidBuilder.create( mEngine.info().maxsids());
+
+	mConfig.frequency = 44100; 
+	mConfig.samplingMethod = SidConfig::INTERPOLATE;
+	mConfig.fastSampling = false;
+	mConfig.playback = SidConfig::MONO;
+	mConfig.sidEmulation = &mSidBuilder;
+
+	mEngine.config(mConfig);
+
+	// Start the decoding thread
+	mDecodingThread = std::thread(&SidplayfpInstance::DecodingLoop, this);
+
   // Set up handlers
   mFunctionMap["info"] = &SidplayfpInstance::HandleInfo;
   mFunctionMap["load"] = &SidplayfpInstance::HandleLoad;
-  
+
 }
 
 SidplayfpInstance::~SidplayfpInstance()
 {
+	mDecodingThread.join();
 	delete mAudio; mAudio = nullptr;
+}
+
+void SidplayfpInstance::DecodingLoop()
+{
+	while(!mDestructing)
+	{
+		bool delay = true;
+
+		do
+		{
+			std::unique_lock<std::mutex> lock(mPlayerMutex);
+			if (!mPlayingTune)
+			{
+				// Nothing to decode
+				break;
+			}
+			
+			AudioQueueEntry *queueEntry = mPlaybackQueue.GetProduceBuffer(); 
+			if (!queueEntry)
+			{
+				// No room to store data.
+				break;
+			}
+
+			delay = false; // There is work to do.
+			mEngine.play( queueEntry->mData, 2*mSampleSize);
+			mPlaybackQueue.PublishProduction();
+
+		} while(0);
+		
+		if (delay)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
+	}
 }
 
 void SidplayfpInstance::HandleMessage(const pp::Var &var_message)
@@ -58,14 +111,14 @@ bool SidplayfpInstance::Init(uint32_t argc, const char *argn[], const char *argv
 {
 	// Retrieve recommended sample frame count
 	
-	mSampleSize = pp::AudioConfig::RecommendSampleFrameCount(this,PP_AUDIOSAMPLERATE_44100, 16384); // Try to use a large frame count. 16384 samples @ 44100 KHz corresponds to about 370 ms. 
+	mSampleSize = pp::AudioConfig::RecommendSampleFrameCount(this,PP_AUDIOSAMPLERATE_44100, 8192); // Try to use a large frame count. 8192 samples @ 44100 KHz corresponds to about 185 ms. 
 
 	// Allocate a buffer of 10 sec.
 	int32_t nrBuffers = ceil(441000. / (double)mSampleSize);
 	
 	mPlaybackQueue.Init(nrBuffers, [this](AudioQueueEntry *entry)
 	{
-		entry->mData = new uint16_t[ 2 * mSampleSize ] ; // For left and right
+		entry->mData = new int16_t[ 2 * mSampleSize ] ; // For left and right
 	} );
 
 	// Create audio resource
@@ -77,7 +130,7 @@ bool SidplayfpInstance::Init(uint32_t argc, const char *argn[], const char *argv
 }
 
 // Callback from browser: Supply data.
-void SidplayfpInstance::GetAudioData(uint16_t *pSamples, uint32_t buffer_size)
+void SidplayfpInstance::GetAudioData(int16_t *pSamples, uint32_t buffer_size)
 {
 	if (buffer_size > mSampleSize)
 	{
@@ -89,17 +142,19 @@ void SidplayfpInstance::GetAudioData(uint16_t *pSamples, uint32_t buffer_size)
 	if (!queueEntry)
 	{
 		// No data available. Generate silence
-		memset(pSamples, 0, buffer_size * 2 * sizeof(uint16_t));
+		memset(pSamples, 0, buffer_size * 2 * sizeof(int16_t));
 	}
 	else
 	{
-		memcpy(pSamples, queueEntry->mData, 2 * buffer_size * sizeof(uint16_t));
+		memcpy(pSamples, queueEntry->mData, 2 * buffer_size * sizeof(int16_t));
 		mPlaybackQueue.PublishConsumption();
 	}
 }
 
 pp::Var SidplayfpInstance::HandleInfo(const pp::Var &)
 {
+	std::unique_lock<std::mutex> lock(mPlayerMutex);
+
   pp::VarDictionary returnValue;
   const SidInfo &info = mEngine.info();
 
@@ -207,6 +262,8 @@ namespace
 }
 pp::Var SidplayfpInstance::HandleLoad(const pp::Var &pData)
 {
+	std::unique_lock<std::mutex> lock(mPlayerMutex);
+
   if (!pData.is_dictionary())
     return pp::Var();
 
@@ -224,6 +281,9 @@ pp::Var SidplayfpInstance::HandleLoad(const pp::Var &pData)
   
   if (mLoadedTune->getStatus())
   {
+		// Select default song
+		mLoadedTune->selectSong(0);
+
     returnValue.Set("status", "OK");
     
     const SidTuneInfo *tuneInfo = mLoadedTune->getInfo();
