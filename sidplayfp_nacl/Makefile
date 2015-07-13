@@ -35,6 +35,17 @@ sidplayfp/sidtune/PSID.cpp \
 sidplayfp/sidtune/SidTuneBase.cpp \
 sidplayfp/sidtune/SidTuneTools.cpp \
 utils/MD5/MD5.cpp \
+builders/resid-builder/resid-builder.cpp \
+builders/resid-builder/resid-emu.cpp \
+builders/resid-builder/resid/dac.cc \
+builders/resid-builder/resid/sid.cc \
+builders/resid-builder/resid/voice.cc \
+builders/resid-builder/resid/wave.cc \
+builders/resid-builder/resid/envelope.cc \
+builders/resid-builder/resid/filter.cc \
+builders/resid-builder/resid/extfilt.cc \
+builders/resid-builder/resid/pot.cc \
+builders/resid-builder/resid/version.cc \
 sidplayfp_nacl.cpp
 
 $(foreach src, $(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
