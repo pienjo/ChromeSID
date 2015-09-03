@@ -2,8 +2,6 @@
 #include "sidplayfp/SidInfo.h"
 #include "sidplayfp/SidTune.h"
 #include "sidplayfp/SidTuneInfo.h"
-#include "LockFreeQueue.h"
-
 #include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "rom/basic_rom.c"
@@ -15,14 +13,21 @@
 
 SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(instance)
 	, mAudio(nullptr)
+	, mBufferStorage(nullptr)
+	, mNrBuffers(0)
+	, mFreeQueue(nullptr)
+	, mPlaybackQueue(nullptr)
+	, mBuffersDecoded(0)
+	, mBuffersPlayed(0)
 	, mDestructing(false)
+	, mPlayerStatus(STOPPED)
 	, mSidBuilder("ChromeSID")
 {
   // Load ROM images.
   mEngine.setRoms(kernal_rom, basic_rom, chargen_rom);
 
 	// Configure the engine
-	mSidBuilder.create( mEngine.info().maxsids());
+	mSidBuilder.create(mEngine.info().maxsids());
 
 	mConfig.frequency = 44100; 
 	mConfig.samplingMethod = SidConfig::INTERPOLATE;
@@ -32,19 +37,21 @@ SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(insta
 
 	mEngine.config(mConfig);
 
-	// Start the decoding thread
-	mDecodingThread = std::thread(&SidplayfpInstance::DecodingLoop, this);
 
   // Set up handlers
-  mFunctionMap["info"] = &SidplayfpInstance::HandleInfo;
+  mFunctionMap["libinfo"] = &SidplayfpInstance::HandleLibInfo;
+	mFunctionMap["playerinfo"] = &SidplayfpInstance::HandlePlayerInfo;
   mFunctionMap["load"] = &SidplayfpInstance::HandleLoad;
-
+	mFunctionMap["play"] = &SidplayfpInstance::HandlePlay;
 }
 
 SidplayfpInstance::~SidplayfpInstance()
 {
 	mDecodingThread.join();
 	delete mAudio; mAudio = nullptr;
+	delete mPlaybackQueue; mPlaybackQueue = nullptr;
+	delete mFreeQueue; mFreeQueue = nullptr;
+	delete[] mBufferStorage; mBufferStorage = nullptr;
 }
 
 void SidplayfpInstance::DecodingLoop()
@@ -62,17 +69,25 @@ void SidplayfpInstance::DecodingLoop()
 				break;
 			}
 			
-			AudioQueueEntry *queueEntry = mPlaybackQueue.GetProduceBuffer(); 
-			if (!queueEntry)
+			AudioQueueEntry *queueEntry = nullptr;
+			if (!mFreeQueue->pop(queueEntry))
 			{
 				// No room to store data.
 				break;
 			}
 
-			delay = false; // There is work to do.
-			mEngine.play( queueEntry->mData, 2*mSampleSize);
-			mPlaybackQueue.PublishProduction();
+			printf("Decode: Popped %16x\n", (intptr_t)queueEntry);
 
+			delay = false; // There is work to do.
+
+			for (int i = 0; i < mSampleSize; ++i)
+			{
+				queueEntry->mData[2 *i] = 256 * (i %256) -32768;
+				queueEntry->mData[2 *i+ 1] = 256 * (i %256) -32768;
+
+			}
+			// mEngine.play( queueEntry->mData, 2*mSampleSize);
+			mPlaybackQueue->push(queueEntry);
 		} while(0);
 		
 		if (delay)
@@ -114,16 +129,25 @@ bool SidplayfpInstance::Init(uint32_t argc, const char *argn[], const char *argv
 	mSampleSize = pp::AudioConfig::RecommendSampleFrameCount(this,PP_AUDIOSAMPLERATE_44100, 8192); // Try to use a large frame count. 8192 samples @ 44100 KHz corresponds to about 185 ms. 
 
 	// Allocate a buffer of 10 sec.
-	int32_t nrBuffers = ceil(441000. / (double)mSampleSize);
+	mNrBuffers = (uint32_t)ceil(441000. / (double)mSampleSize);
 	
-	mPlaybackQueue.Init(nrBuffers, [this](AudioQueueEntry *entry)
+	mBufferStorage = new AudioQueueEntry[mNrBuffers]; 
+	mFreeQueue = new memory_sequential_consistent::CircularFifo<AudioQueueEntry *>(mNrBuffers);
+	mPlaybackQueue = new memory_sequential_consistent::CircularFifo<AudioQueueEntry *>(mNrBuffers);
+
+	for (int i = 0; i < mNrBuffers; ++i) 
 	{
-		entry->mData = new int16_t[ 2 * mSampleSize ] ; // For left and right
-	} );
+		mBufferStorage[i].mData = new int16_t[mSampleSize];
+		mFreeQueue->push(&mBufferStorage[i]);
+	}
+	printf("Buffer size : %d\n", mNrBuffers);
 
 	// Create audio resource
 	mAudio = new pp::Audio(this, pp::AudioConfig(this, PP_AUDIOSAMPLERATE_44100, mSampleSize),
 												 GetAudioDataCallback, this);
+
+	// Start the decoding thread
+	mDecodingThread = std::thread(&SidplayfpInstance::DecodingLoop, this);
 
 	// Don't start playing audio until specifically requested. 
 	return true;
@@ -138,20 +162,77 @@ void SidplayfpInstance::GetAudioData(int16_t *pSamples, uint32_t buffer_size)
 		buffer_size = mSampleSize;
 	}
 
-	AudioQueueEntry *queueEntry = mPlaybackQueue.GetConsumptionBuffer();
-	if (!queueEntry)
+	AudioQueueEntry *queueEntry = nullptr;
+	if (mPlaybackQueue->pop(queueEntry))
 	{
-		// No data available. Generate silence
-		memset(pSamples, 0, buffer_size * 2 * sizeof(int16_t));
+		memcpy(pSamples, queueEntry->mData, 2 * buffer_size * sizeof(int16_t));
+		mFreeQueue->push(queueEntry);
+		mFramesPlayed++;
 	}
 	else
 	{
-		memcpy(pSamples, queueEntry->mData, 2 * buffer_size * sizeof(int16_t));
-		mPlaybackQueue.PublishConsumption();
+		// No data available (or paused, but player status hasn't been updated). Generate silence
+		memset(pSamples, 0, buffer_size * 2 * sizeof(int16_t));
 	}
 }
 
-pp::Var SidplayfpInstance::HandleInfo(const pp::Var &)
+pp::Var SidplayfpInstance::HandlePlay(const pp::Var &)
+{
+	std::unique_lock<std::mutex> lock(mPlayerMutex);
+	bool status = true;
+	
+	// Switch to new track
+	
+	// Lock has been taken, so decoding thread is not active.
+	mPlayingTune = mLoadedTune;
+
+	//mAudio->StopPlayback(); // But note that there may yet be a callback in progress!
+	mPlayerStatus = STOPPED;
+
+	// Flush any unplayed data ????
+
+	if (mEngine.load(mPlayingTune.get()))
+	{
+		// Tune has been loaded. (Re)start playback.
+		mAudio->StartPlayback();
+		mPlayerStatus = PLAYING;
+	}
+	else
+	{
+		status = false;
+	}
+
+	return pp::Var(status);
+}
+
+pp::Var SidplayfpInstance::HandlePlayerInfo(const pp::Var &)
+{
+	// Retrieve audio status
+	pp::VarDictionary audioInfo;
+	audioInfo.Set("sampleSize", (int)mSampleSize);
+	audioInfo.Set("bufferSize", (int)mNrBuffers);
+	audioInfo.Set("bufferUsage", (int)(mBuffersDecoded.load(std::memory_order_seq_cst) - mBuffersPlayed.load(std::memory_order_seq_cst)));
+
+	audioInfo.Set("progress", (double) (mFramesPlayed) * (double) mSampleSize / 44100.);
+	
+	playerStatus status = mPlayerStatus;
+
+	switch (status)
+	{
+		case STOPPED:
+			audioInfo.Set("status", "STOPPED");
+			break;
+		case PAUSED:
+			audioInfo.Set("status", "PAUSED");
+			break;
+		case PLAYING:
+			audioInfo.Set("status", "PLAYING");
+			break;
+	}
+	return audioInfo;
+}
+
+pp::Var SidplayfpInstance::HandleLibInfo(const pp::Var &)
 {
 	std::unique_lock<std::mutex> lock(mPlayerMutex);
 
@@ -181,12 +262,6 @@ pp::Var SidplayfpInstance::HandleInfo(const pp::Var &)
   romInfo.Set("basic", info.basicDesc());
   romInfo.Set("chargen", info.chargenDesc());
   returnValue.Set("romInfo", romInfo);
-
-	// Retrieve audio status
-	pp::VarDictionary audioInfo;
-	audioInfo.Set("sampleSize", (int)mSampleSize);
-	audioInfo.Set("bufferSize", (int)mPlaybackQueue.BufferSize());
-	audioInfo.Set("bufferUsage", (int)mPlaybackQueue.BuffersInUse());
 
   return returnValue;
 }

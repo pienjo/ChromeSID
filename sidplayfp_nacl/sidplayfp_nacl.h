@@ -6,13 +6,12 @@
 #include "sidplayfp/sidplayfp.h"
 #include "sidplayfp/SidConfig.h"
 #include "builders/resid-builder/resid.h"
-#include "LockFreeQueue.h"
+#include "CircularFifo.h"
 #include <memory>
 #include <mutex>
 #include <thread>
 
 class SidplayfpInstance;
-
 
 class SidplayfpInstance : public pp::Instance
 {
@@ -49,23 +48,32 @@ class SidplayfpInstance : public pp::Instance
 
 				~AudioQueueEntry() 
 				{
-					delete mData;
+					delete[] mData;
 				}
 
 				int16_t *mData;
 		};
-
-		LockFreeQueue<AudioQueueEntry> mPlaybackQueue;
 		
+		AudioQueueEntry *mBufferStorage;
+		uint32_t mNrBuffers;
+
+		memory_sequential_consistent::CircularFifo<AudioQueueEntry *> *mFreeQueue;
+		memory_sequential_consistent::CircularFifo<AudioQueueEntry *> *mPlaybackQueue;
+		
+		std::atomic<uint32_t> mBuffersDecoded;
+		std::atomic<uint32_t> mBuffersPlayed;
+
 		void DecodingLoop();
 
 		typedef pp::Var (SidplayfpInstance::*handlerFunc)(const pp::Var &);
     std::map<std::string, handlerFunc> mFunctionMap;
   
     // Message handlers
-    pp::Var HandleInfo(const pp::Var &);
+    pp::Var HandleLibInfo(const pp::Var &);
+    pp::Var HandlePlayerInfo(const pp::Var &);
     pp::Var HandleLoad(const pp::Var &pData);
-	
+		pp::Var HandlePlay(const pp::Var &);
+
 	  // Synchronisation: Locks access to all SidplayFP resources
 		std::mutex mPlayerMutex;	
 		std::thread mDecodingThread;
@@ -74,6 +82,16 @@ class SidplayfpInstance : public pp::Instance
 		// Tune
     std::shared_ptr<SidTune> mLoadedTune;
 		std::shared_ptr<SidTune> mPlayingTune;
+		std::atomic<uint32_t> mFramesPlayed;
+		
+		enum playerStatus
+		{
+			STOPPED,
+			PAUSED,
+			PLAYING
+		};
+
+		std::atomic<playerStatus> mPlayerStatus;
 
     // engine
     sidplayfp mEngine;
