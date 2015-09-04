@@ -74,14 +74,21 @@
   
   // PUblic functions
   
-  Sidplay.prototype.GetInfo = function(callback) {
-    this._sendCommand("info", null, callback);
+  Sidplay.prototype.GetLibInfo = function(callback) {
+    this._sendCommand("libinfo", null, callback);
   };
   
   Sidplay.prototype.Load = function(contents, callback) {
     this._sendCommand("load", { contents : contents }, callback);
   };
   
+  Sidplay.prototype.GetPlayerInfo = function(callback) {
+    this._sendCommand("playerinfo", null, callback );
+  };
+  
+  Sidplay.prototype.Play = function(callback) {
+    this._sendCommand("play", null, callback);
+  };
   // Export to window
   window.app = window.app || {};
   window.app.Sidplay = Sidplay;

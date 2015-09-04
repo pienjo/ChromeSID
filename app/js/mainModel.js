@@ -22,8 +22,16 @@
           });
   };
   
-  MainModel.prototype.GetInfo = function(callback) {
-    this._player.GetInfo(callback);
+  MainModel.prototype.GetLibInfo = function(callback) {
+    this._player.GetLibInfo(callback);
+  };
+  
+  MainModel.prototype.GetPlayerInfo = function(callback) {
+    this._player.GetPlayerInfo(callback);
+  };
+  
+  MainModel.prototype.Play = function(callback) {
+    this._player.Play(callback);
   };
   
   // Export to window

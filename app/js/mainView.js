@@ -6,6 +6,8 @@
     this.$loadButton = document.querySelector('#loadButton');
     this.$filename = document.querySelector("#filename");
     this.$subtunes = document.querySelector('#subtunes');
+    this.$playerStatusLine = document.querySelector("#playerstatus");
+    this.$playButton = document.querySelector("#playButton");
   }
   
   MainView.prototype.SetStatus = function(statusText) {
@@ -17,11 +19,23 @@
     this.$subtunes.innerHTML = tuneInfo.subtunes;
   };
   
+  MainView.prototype.RenderPlayerInfo = function(playerInfo) {
+    this.$playerStatusLine.textContent = playerInfo;
+  };
+  
   MainView.prototype.Bind = function(event, handler) {
     if (event === "load") {
       this.$loadButton.addEventListener('click', function(){
         handler();
       });
+    } else if (event == "play") {
+      this.$playButton.addEventListener('click', function(){
+        handler();
+      });
+    } else if (event == "playerStatusUpdate") {
+      window.setInterval(function() {
+        handler();
+      }, 1000);
     }
   };
   
