@@ -20,6 +20,14 @@
       that._onPlayerStatusUpdate();
     });
     
+    this._view.Bind("selectSubtune", function( subtuneId ) {
+      that._onSelectSubtune( subtuneId );
+    });
+    
+    this._view.Bind("pauseResume", function() {
+      that._onPauseResume();
+    });
+    
     // Query the player for the version, to indicate activity
     this._view.SetStatus("Initializing player...");
     this._model.GetLibInfo( function(statusInfo) {
@@ -43,6 +51,11 @@
     });
   };
   
+  MainController.prototype._onPauseResume = function() {
+    this._model.PauseResume(function() {
+      
+    });
+  };
   
   MainController.prototype._onPlayerStatusUpdate = function() {
     var that = this;
@@ -66,11 +79,17 @@
       
       seconds = "000" + seconds;
       seconds = seconds.substr(seconds.length - 2);
-        
-      that._view.RenderPlayerInfo("" + minutes + ":" + seconds +"." + msecs + "  " + bufferFilled + "%");
+      
+      that._view.RenderPlayerInfo("Subtune " + playerInfo.subtune + " " + minutes + ":" + seconds +"." + msecs + "  " + bufferFilled + "% Last status: " + playerInfo.lastError);
+      that._view.SetPauseStatus(playerInfo.status == "PAUSED");
     });
   };
   
+  MainController.prototype._onSelectSubtune = function( subtuneId ) {
+    this._model.SelectSubtune( subtuneId, function() {
+      
+    });
+  };
   // Export to window
   window.app = window.app || {};
   window.app.MainController = MainController;

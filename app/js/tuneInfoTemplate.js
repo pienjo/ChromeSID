@@ -26,9 +26,9 @@
   function TuneInfoTemplate()
   {
 		this._subtuneTemplate
-		=	'<li data-id="{{subTuneId}}">'
-		+		'{{title}} - {{author}} &copy; {{copyright}} ( {{model}} {{speed}} )'
-		+	'</li>';
+		=	'<option value="{{subTuneId}}">'
+		+		'{{subTuneId}} : {{title}} - {{author}} &copy; {{copyright}} ( {{model}} {{speed}} )'
+		+	'</option>';
   }
   
   TuneInfoTemplate.prototype.showSubtunes = function(data) {
@@ -38,7 +38,7 @@
     for (index = 0; index < data.length; ++index) {
       var template = this._subtuneTemplate;
       var subtune = data[index];
-      template = template.replace('{{subTuneId}}', index);
+      template = template.replace(/\{\{subTuneId\}\}/g, index + 1);
       template = template.replace('{{title}}', escape(subtune.songInfos[0]) );
       template = template.replace('{{author}}', escape(subtune.songInfos[1]) );
       template = template.replace('{{copyright}}', escape(subtune.songInfos[2]));

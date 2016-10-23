@@ -86,9 +86,17 @@
     this._sendCommand("playerinfo", null, callback );
   };
   
-  Sidplay.prototype.Play = function(callback) {
-    this._sendCommand("play", null, callback);
+  Sidplay.prototype.Play = function(subtuneId, callback) {
+    if (subtuneId !== null)
+      this._sendCommand("play", { subtuneId : subtuneId }, callback);
+    else
+      this._sendCommand("play", null, callback);
   };
+  
+  Sidplay.prototype.PauseResume = function(callback) {
+    this._sendCommand("pauseresume", null, callback);
+  };
+
   // Export to window
   window.app = window.app || {};
   window.app.Sidplay = Sidplay;

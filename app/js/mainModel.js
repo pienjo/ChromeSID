@@ -17,7 +17,8 @@
             that._tuneInfo = infoObj;
             callback({
                 "filename" : filename,
-                "subtunes" : that._template.showSubtunes(infoObj.songs)
+                "subtunes" : that._template.showSubtunes(infoObj.songs),
+                "defaultSong": infoObj.defaultSong
               });
           });
   };
@@ -31,7 +32,15 @@
   };
   
   MainModel.prototype.Play = function(callback) {
-    this._player.Play(callback);
+    this._player.Play(null, callback);
+  };
+  
+  MainModel.prototype.SelectSubtune = function( subtuneId, callback) {
+    this._player.Play(subtuneId, callback);
+  };
+  
+  MainModel.prototype.PauseResume = function( callback ) {
+    this._player.PauseResume(callback);
   };
   
   // Export to window
