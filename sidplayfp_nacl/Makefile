@@ -4,11 +4,12 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 
 TARGET=sidplayfp
 LIBS=ppapi_cpp ppapi
+CONFIG=Release
 
 # Use std=gnu++11 (even though the code itself doesn't use any GNU extensions) to work around
 # a bug in pepper's newlib (sstream uses GNU extensions)
 
-CFLAGS=-std=gnu++11 -Wall -Wno-unused-private-field -I $(CURDIR) -I $(CURDIR)/sidplayfp -DHAVE_CONFIG_H 
+CFLAGS=-std=gnu++11 -Wall -Wno-unused-private-field -I $(CURDIR) -I $(CURDIR)/sidplayfp -DHAVE_CONFIG_H -O3
 SOURCES = \
 sidplayfp/config.cpp \
 sidplayfp/EventScheduler.cpp \
