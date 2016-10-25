@@ -47,6 +47,23 @@ builders/resid-builder/resid/filter.cc \
 builders/resid-builder/resid/extfilt.cc \
 builders/resid-builder/resid/pot.cc \
 builders/resid-builder/resid/version.cc \
+builders/residfp-builder/residfp/Dac.cpp \
+builders/residfp-builder/residfp/EnvelopeGenerator.cpp \
+builders/residfp-builder/residfp/ExternalFilter.cpp \
+builders/residfp-builder/residfp/Filter.cpp \
+builders/residfp-builder/residfp/Filter6581.cpp \
+builders/residfp-builder/residfp/Filter8580.cpp \
+builders/residfp-builder/residfp/FilterModelConfig.cpp \
+builders/residfp-builder/residfp/Integrator.cpp \
+builders/residfp-builder/residfp/OpAmp.cpp \
+builders/residfp-builder/residfp/SID.cpp \
+builders/residfp-builder/residfp/Spline.cpp \
+builders/residfp-builder/residfp/WaveformCalculator.cpp \
+builders/residfp-builder/residfp/WaveformGenerator.cpp \
+builders/residfp-builder/residfp/version.cc \
+builders/residfp-builder/residfp/resample/SincResampler.cpp \
+builders/residfp-builder/residfp-builder.cpp \
+builders/residfp-builder/residfp-emu.cpp \
 sidplayfp_nacl.cpp
 
 $(foreach src, $(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
