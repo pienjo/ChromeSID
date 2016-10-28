@@ -28,10 +28,14 @@
       that._onPauseResume();
     });
     
+    this._view.Bind("settings", function() {
+      that._onSettingsPressed();
+    });
+    
     // Query the player for the version, to indicate activity
     this._view.SetStatus("Initializing player...");
     this._model.GetLibInfo( function(statusInfo) {
-      that._view.SetStatus("Successfully initialized " + statusInfo.libraryVersion);
+      that._view.SetStatus("Successfully initialized " + statusInfo.libraryVersion + " Kernal " + statusInfo.romInfo.kernal + " Basic " + statusInfo.romInfo.basic + " Chargen " + statusInfo.romInfo.chargen);
     });
   }
   
@@ -87,9 +91,40 @@
   
   MainController.prototype._onSelectSubtune = function( subtuneId ) {
     this._model.SelectSubtune( subtuneId, function() {
-      
+
     });
   };
+  
+  MainController.prototype._onSettingsPressed = function() {
+    
+    var that = this;
+    
+    this._model.GetConfig(function(config)
+    {
+      chrome.runtime.sendMessage({
+        action: "createSettings",
+        config: config,
+      },
+      
+      function(settingsWindow) {
+        if (settingsWindow)
+        {
+          // Window successfully opened.
+          that._view.SetConfigButtonEnabled(false);
+        }
+      });
+    });
+      
+  };
+  
+  MainController.prototype.OnSettingsApplied = function(newConfig) {
+    this._model.SetConfig(newConfig);
+  };
+  
+  MainController.prototype.OnSettingsClosed = function() {
+    this._view.SetConfigButtonEnabled(true);
+  };
+  
   // Export to window
   window.app = window.app || {};
   window.app.MainController = MainController;

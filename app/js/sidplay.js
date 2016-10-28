@@ -86,6 +86,14 @@
     this._sendCommand("playerinfo", null, callback );
   };
   
+  Sidplay.prototype.GetConfig = function(callback) {
+    this._sendCommand("getconfig", null, callback );
+  };
+  
+  Sidplay.prototype.SetConfig = function(config, callback) {
+    this._sendCommand("setconfig", config, callback);
+  };
+  
   Sidplay.prototype.Play = function(subtuneId, callback) {
     if (subtuneId !== null)
       this._sendCommand("play", { subtuneId : subtuneId }, callback);

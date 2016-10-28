@@ -6,6 +6,7 @@
 #include "sidplayfp/sidplayfp.h"
 #include "sidplayfp/SidConfig.h"
 #include "builders/resid-builder/resid.h"
+#include "builders/residfp-builder/residfp.h"
 #include "CircularFifo.h"
 #include <memory>
 #include <mutex>
@@ -71,6 +72,8 @@ class SidplayfpInstance : public pp::Instance
     // Message handlers
     pp::Var HandleLibInfo(const pp::Var &);
     pp::Var HandlePlayerInfo(const pp::Var &);
+    pp::Var HandleGetConfig(const pp::Var &);
+    pp::Var HandleSetConfig(const pp::Var &pConfig);
     pp::Var HandleLoad(const pp::Var &pData);
     pp::Var HandlePlay(const pp::Var &pData);
     pp::Var HandlePauseResume(const pp::Var &pData);
@@ -100,8 +103,12 @@ class SidplayfpInstance : public pp::Instance
 
     // engine
     sidplayfp mEngine;
-    SidConfig mConfig;
-    ReSIDBuilder mSidBuilder;
+    
+    bool mFilterEnabled;
+
+    ReSIDfpBuilder mReSIDfp_builder;
+    ReSIDBuilder mReSID_builder;
+
     std::string mLastError;
 };
  

@@ -6,6 +6,7 @@
     
     this._tuneInfo = undefined;
     this._tuneFilename = undefined;
+    this._config = undefined;
   }
   
   MainModel.prototype.Load = function(filename, contents, callback) {
@@ -41,6 +42,32 @@
   
   MainModel.prototype.PauseResume = function( callback ) {
     this._player.PauseResume(callback);
+  };
+  
+  MainModel.prototype.GetConfig = function(callback) {
+    callback = callback || function() { };
+    
+    if (this._config !== undefined)
+    {
+      callback(this._config);
+    }
+    else
+    {
+      // Retrieve configuration from player when it is done loading
+      var that = this;
+      this._player.GetConfig(function(config) {
+        that._config = config;
+        callback(config);
+      });
+    }
+  };
+  
+  MainModel.prototype.SetConfig = function(config, callback) {
+    var that = this;
+    this._player.SetConfig(config, function(newConfig) {
+      that._config = newConfig;
+      if (callback) callback(newConfig);
+    });
   };
   
   // Export to window

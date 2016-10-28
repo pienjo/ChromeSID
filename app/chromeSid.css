@@ -1,0 +1,26 @@
+.settingscontainer {
+  height: 100%;
+  width:  100%;
+  display: flex;
+}
+
+.settingscontainer div
+{
+  padding: 5px;
+}
+
+.settingsleft {
+  width: 50%;
+}
+
+.settingsright {
+  width: 50%;
+}
+
+.settingstop {
+  height: 50%;
+}
+
+.settingsbottom {
+  height: 50%;
+}

@@ -11,4 +11,18 @@
   }
 
   var chromeSid = new ChromeSid();
+  
+  chrome.runtime.onMessage.addListener(function(request, sender, callback){
+    if (request)
+    {
+      if( request.action === 'settingsApplied') {
+        chromeSid.mainController.OnSettingsApplied(request.config);
+        return true;
+      }
+      if (request.action === 'settingsClosed') {
+        chromeSid.mainController.OnSettingsClosed();
+        return true;
+      }
+    }
+  });
 })();

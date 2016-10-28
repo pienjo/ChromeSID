@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Player settings</title>
+    <link rel="stylesheet" type="text/css" href="chromeSid.css">
+  </head>
+  <body>
+    <form action="" class="settingscontainer">
+      <div cass="settingsleft">
+        <div class="settingstop">
+          <p>Default SID model</p>
+          <input type="radio" name="defaultSidModel" value="6581">6581<br>
+          <input type="radio" name="defaultSidModel" value="8580">8580<br>
+          <input type="checkbox" id="forceSidModel">Force SID model<br>
+        </div>
+        <div class="settingsbottom">
+          <p>Default C64 model</p>
+          <input type="radio" name="defaultC64Model" value="PAL">PAL<br>
+          <input type="radio" name="defaultC64Model" value="NTSC">NTSC<br>
+          <input type="radio" name="defaultC64Model" value="OLD_NTSC">NTSC (Old)<br>
+          <input type="radio" name="defaultC64Model" value="DREAN">Drean<br>
+          <input type="checkbox" id="forceC64Model">Force C64 model<br>
+        </div>
+      </div>
+      <div class="settingsright">
+        <div class="settingstop">
+          <p>Emulation engine</p>
+          <input type="radio" name="sidEmulation" value="ReSID">ReSID<br>
+          <input type="radio" name="sidEmulation" value="ReSIDfp">ReSIDfp<br>
+        </div>
+        <div class="settingsbottom">
+          <p>Payback options</p>
+          <input type="checkbox" id="filterEnabled">Enable filtering<br>
+          <input type="checkbox" id="resampling">Enable resampling<br>
+        </div>
+      </div>
+    </form>
+    <p align="right">
+      <button id="applyButton">Apply</button>
+    </p>
+    <script src="js/settingsView.js"></script>
+    <script src="js/settingsController.js"></script>
+    <script src="js/settingsapp.js"></script>
+  </body>
+</html>

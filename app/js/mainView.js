@@ -4,6 +4,7 @@
   function MainView() {
     this.$statusLine = document.querySelector('#status');
     this.$loadButton = document.querySelector('#loadButton');
+    this.$settingsButton = document.querySelector('#settingsButton');
     this.$filename = document.querySelector("#filename");
     this.$subtunes = document.querySelector('#subtunes');
     this.$playerStatusLine = document.querySelector("#playerstatus");
@@ -34,6 +35,10 @@
     }
   };
   
+  MainView.prototype.SetConfigButtonEnabled = function(enabled) {
+    this.$settingsButton.disabled= !enabled;
+  };
+  
   MainView.prototype.Bind = function(event, handler) {
     if (event === "load") {
       this.$loadButton.addEventListener('click', function(){
@@ -41,6 +46,10 @@
       });
     } else if (event === "play") {
       this.$playButton.addEventListener('click', function(){
+        handler();
+      });
+    } else if (event === "settings") {
+      this.$settingsButton.addEventListener('click', function(){
         handler();
       });
     } else if (event === "playerStatusUpdate") {

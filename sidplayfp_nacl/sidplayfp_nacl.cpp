@@ -21,27 +21,38 @@ SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(insta
   , mBuffersPlayed(0)
   , mDestructing(false)
   , mPlayerStatus(STOPPED)
-  , mSidBuilder("ChromeSID")
+  , mFilterEnabled(true)
+  , mReSIDfp_builder("ReSIDfp")
+  , mReSID_builder("ReSID")
 {
   mLastError = "All OK";
   // Load ROM images.
-  //mEngine.setRoms(kernal_rom, basic_rom, chargen_rom);
+  mEngine.setRoms(kernal_rom, basic_rom, chargen_rom);
 
   // Configure the engine
-  mSidBuilder.create(mEngine.info().maxsids());
-
-  if (!mSidBuilder.getStatus())
+  mReSIDfp_builder.create(mEngine.info().maxsids());
+  if (!mReSIDfp_builder.getStatus())
   {
-    mLastError = mSidBuilder.error();
+    mLastError = mReSIDfp_builder.error();
+  }
+  
+  mReSID_builder.create(mEngine.info().maxsids());
+  if (!mReSID_builder.getStatus())
+  {
+    mLastError = mReSID_builder.error();
   }
 
-  mConfig.frequency = 44100; 
-  mConfig.samplingMethod = SidConfig::INTERPOLATE;
-  mConfig.fastSampling = false;
-  mConfig.playback = SidConfig::STEREO;
-  mConfig.sidEmulation = &mSidBuilder;
+  mReSID_builder.filter(mFilterEnabled);
+  mReSIDfp_builder.filter(mFilterEnabled);
 
-  if (!mEngine.config(mConfig))
+  SidConfig sidConfig;
+  sidConfig.frequency = 44100; 
+  sidConfig.samplingMethod = SidConfig::INTERPOLATE;
+  sidConfig.fastSampling = false;
+  sidConfig.playback = SidConfig::STEREO;
+  sidConfig.sidEmulation = &mReSID_builder;
+
+  if (!mEngine.config(sidConfig))
   {
     mLastError = mEngine.error();
   }
@@ -52,6 +63,8 @@ SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(insta
   mFunctionMap["load"] = &SidplayfpInstance::HandleLoad;
   mFunctionMap["play"] = &SidplayfpInstance::HandlePlay;
   mFunctionMap["pauseresume"] = &SidplayfpInstance::HandlePauseResume;
+  mFunctionMap["getconfig"] = &SidplayfpInstance::HandleGetConfig;
+  mFunctionMap["setconfig"] = &SidplayfpInstance::HandleSetConfig;
 }
 
 SidplayfpInstance::~SidplayfpInstance()
@@ -139,8 +152,8 @@ bool SidplayfpInstance::Init(uint32_t argc, const char *argn[], const char *argv
   
   mSampleSize = pp::AudioConfig::RecommendSampleFrameCount(this,PP_AUDIOSAMPLERATE_44100, 8192); // Try to use a large frame count. 8192 samples @ 44100 KHz corresponds to about 185 ms. 
 
-  // Allocate a buffer of 10 sec.
-  mNrBuffers = (uint32_t)ceil(441000. / (double)mSampleSize);
+  // Allocate a buffer of 5 sec.
+  mNrBuffers = (uint32_t)ceil(5. * 44100. / (double)mSampleSize);
   
   mBufferStorage = new AudioQueueEntry[mNrBuffers]; 
   mFreeQueue = new memory_sequential_consistent::CircularFifo<AudioQueueEntry *>(mNrBuffers);
@@ -233,7 +246,7 @@ pp::Var SidplayfpInstance::HandlePlay(const pp::Var &pData)
   // Lock has been taken, so decoding thread is not active.
   mPlayingTune = mLoadedTune;
   mBuffersDecoded = 0;
-  bool wasPlaying = (mPlayerStatus == PLAYING);
+  bool wasPlaying = (mPlayerStatus == PLAYING || mPlayerStatus == PAUSED);
 
   if (mEngine.load(mPlayingTune.get()))
   {
@@ -402,6 +415,175 @@ namespace
     return returnValue;
   }
 }
+
+pp::Var SidplayfpInstance::HandleGetConfig(const pp::Var &)
+{
+  std::unique_lock<std::mutex> lock(mPlayerMutex);
+  SidConfig currentConfig = mEngine.config();
+
+  pp::VarDictionary returnValue;
+
+  const char *c64model = "unknown";
+  switch (currentConfig.defaultC64Model)
+  {
+    case SidConfig::PAL:
+      c64model = "PAL";
+      break;
+    case SidConfig::NTSC:
+      c64model = "NTSC";
+      break;
+    case SidConfig::OLD_NTSC:
+      c64model = "OLD_NTSC";
+      break;
+    case SidConfig::DREAN:
+      c64model = "DREAN";
+      break;
+  }
+  
+  returnValue.Set("defaultC64Model", c64model);
+  returnValue.Set("forceC64Model", currentConfig.forceC64Model);
+  returnValue.Set("defaultSidModel", currentConfig.defaultSidModel == SidConfig::MOS6581 ? "6581" : "8580");
+  returnValue.Set("forceSidModel", currentConfig.forceSidModel);
+
+  // Don't propagate playback and frequency settings
+  returnValue.Set("sidEmulation", currentConfig.sidEmulation->name());
+  returnValue.Set("filterEnabled", mFilterEnabled); 
+  returnValue.Set("resampling", currentConfig.samplingMethod == SidConfig::RESAMPLE_INTERPOLATE);
+
+  return returnValue;
+}
+
+pp::Var SidplayfpInstance::HandleSetConfig(const pp::Var &pData)
+{
+  {
+    // There's no full exception support in pNaCl :-(
+
+    std::unique_lock<std::mutex> lock(mPlayerMutex);
+
+    SidConfig currentConfig = mEngine.config();
+    SidConfig newConfig = currentConfig;
+    bool restartPlayback = false;
+
+    if (pData.is_dictionary())
+    {
+      pp::VarDictionary dict(pData);
+      
+      pp::Var value = dict.Get("defaultC64Model");
+      if (value.is_string())
+      {
+	std::string modelStr = value.AsString();
+
+	if (modelStr == "PAL")
+	{
+	  newConfig.defaultC64Model = SidConfig::PAL;	
+	} else if (modelStr == "NTSC")
+	{
+	  newConfig.defaultC64Model = SidConfig::NTSC;	
+	} else if (modelStr == "OLD_NTSC")
+	{
+	  newConfig.defaultC64Model = SidConfig::OLD_NTSC;	
+	} else if (modelStr == "DREAN")
+	{
+	  newConfig.defaultC64Model = SidConfig::DREAN;	
+	}
+      }
+
+      value = dict.Get("forceC64Model");
+      if (value.is_bool())
+      {
+	newConfig.forceC64Model = value.AsBool();
+      }
+      
+      value = dict.Get("defaultSidModel");
+      // Parse as int *and* as string..
+      if (value.is_int())
+      {
+	switch(value.AsInt())
+	{
+	  case 6581:
+	    newConfig.defaultSidModel = SidConfig::MOS6581;
+	    break;
+	  case 8580:
+	    newConfig.defaultSidModel = SidConfig::MOS8580;
+	    break;
+	}
+      }
+      if (value.is_string())
+      {
+	std::string modelStr = value.AsString();
+	if (modelStr == "6581")
+	  newConfig.defaultSidModel = SidConfig::MOS6581;
+	else if (modelStr == "8580")
+	  newConfig.defaultSidModel = SidConfig::MOS8580;
+      }
+      
+      value = dict.Get("forceSidModel");
+      if (value.is_bool())
+      {
+	newConfig.forceSidModel = value.AsBool();
+      }
+
+      value = dict.Get("sidEmulation");
+      if (value.is_string())
+      {
+	std::string emulationStr = value.AsString();
+	if (emulationStr == mReSIDfp_builder.name())
+	  newConfig.sidEmulation = &mReSIDfp_builder;
+	else if (emulationStr == mReSID_builder.name())
+	  newConfig.sidEmulation = &mReSID_builder;
+      }
+
+      value = dict.Get("filterEnabled");
+      if (value.is_bool())
+      {
+	bool newEnabled = value.AsBool();
+	if (newEnabled != mFilterEnabled)
+	{
+	  restartPlayback = true;
+	  mFilterEnabled = value.AsBool();
+	  mReSIDfp_builder.filter(mFilterEnabled);
+	  mReSID_builder.filter(mFilterEnabled);
+	}
+      }
+
+      value = dict.Get("resampling");
+      if (value.is_bool())
+      {
+	newConfig.samplingMethod = (value.AsBool() ? SidConfig::RESAMPLE_INTERPOLATE : SidConfig::INTERPOLATE);
+      }
+    }
+
+    restartPlayback = restartPlayback || 
+		       newConfig.defaultC64Model != currentConfig.defaultC64Model || 
+		       newConfig.defaultSidModel != currentConfig.defaultSidModel ||
+		       newConfig.forceC64Model != currentConfig.forceC64Model ||
+		       newConfig.forceSidModel != currentConfig.forceSidModel ||
+		       newConfig.sidEmulation != currentConfig.sidEmulation ||
+		       newConfig.samplingMethod != currentConfig.samplingMethod;
+
+
+    if (restartPlayback)
+    {
+      bool wasPlaying = mPlayerStatus == PLAYING || mPlayerStatus == PAUSED;
+      mEngine.stop();
+
+      if (!mEngine.config(newConfig))
+	mLastError = mEngine.error();
+
+      if (mEngine.load(mPlayingTune.get()))
+      {
+	if (wasPlaying)
+	  mPlayerStatus = wasPlaying?  FLUSHING_RESUMEPLAY : PLAYING;
+      }
+      else
+      {
+	mPlayerStatus = wasPlaying ? FLUSHING_STOP : STOPPED;
+      }
+    }
+  } while(0);
+  return HandleGetConfig(pp::Var());
+}
+
 pp::Var SidplayfpInstance::HandleLoad(const pp::Var &pData)
 {
   std::unique_lock<std::mutex> lock(mPlayerMutex);
