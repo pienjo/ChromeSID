@@ -1,12 +1,23 @@
 (function (window) {
   'use strict';
-  function MainModel(player, template) {
+  function MainModel(player, template, storage) {
+    var that = this;
+    
     this._player = player;
     this._template = template;
+    this._storage = storage;
     
     this._tuneInfo = undefined;
     this._tuneFilename = undefined;
     this._config = undefined;
+    
+    // Retrieve settings from local storage
+    storage.LoadAll(function(config) {
+      // Update player's setting
+      that._player.SetConfig(config, function (newConfig) {
+        that._config = newConfig;
+      });
+    });
   }
   
   MainModel.prototype.Load = function(filename, contents, callback) {
@@ -64,9 +75,13 @@
   
   MainModel.prototype.SetConfig = function(config, callback) {
     var that = this;
+    callback = callback || function() { };
+    
     this._player.SetConfig(config, function(newConfig) {
       that._config = newConfig;
-      if (callback) callback(newConfig);
+      that._storage.ReplaceAll( newConfig, function() {
+        callback(newConfig);
+      });
     });
   };
   

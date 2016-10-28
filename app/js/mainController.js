@@ -34,8 +34,10 @@
     
     // Query the player for the version, to indicate activity
     this._view.SetStatus("Initializing player...");
+    this._view.DisableAllControls(true);
     this._model.GetLibInfo( function(statusInfo) {
       that._view.SetStatus("Successfully initialized " + statusInfo.libraryVersion + " Kernal " + statusInfo.romInfo.kernal + " Basic " + statusInfo.romInfo.basic + " Chargen " + statusInfo.romInfo.chargen);
+      that._view.DisableAllControls(false);
     });
   }
   

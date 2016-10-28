@@ -39,6 +39,14 @@
     this.$settingsButton.disabled= !enabled;
   };
   
+  MainView.prototype.DisableAllControls = function (disable) {
+    var controls = [ this.$loadButton, this.$settingsButton, this.$playButton, this.$pauseResumeButton ];
+    for(var i = 0; i < controls.length; ++i)
+    {
+      controls[i].disabled = disable;
+    }
+  };
+  
   MainView.prototype.Bind = function(event, handler) {
     if (event === "load") {
       this.$loadButton.addEventListener('click', function(){
