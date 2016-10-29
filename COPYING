@@ -1,0 +1,3 @@
+Since the NaCL module is based on libsidplayfp, it is available under a GPLv2 license. See `sidplayfp_nacl/COPYING` for details.
+
+The (javascript) application is available under a MIT license. See 'app/COPYING' for details.
