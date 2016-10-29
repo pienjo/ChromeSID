@@ -11,5 +11,18 @@
       "scripts": [ "background.js"]
     }
   },
-  "minimum_chrome_version":"43"
+  "offline_enabled": true,
+  "file_handlers": {
+    "sid": {
+      "extensions": [
+        "sid",
+        "psid"
+      ],
+      "types": [
+        "audio/x-sid",
+        "audio/prs.sid"
+      ]
+    }
+  },
+  "minimum_chrome_version":"49"
 }

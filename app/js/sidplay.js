@@ -6,7 +6,8 @@
     
     this._pluginLocation = ".";
     this._pluginName = "sidplayfp.nmf";
-    this._transactions = [];
+    this._transactions = []; // Queue of transactions that have yet to be sent
+    this._transactionInProgress = null; // Transaction in progress (sent to player, but response has not been received or processed)
     this.$containerElement = document.querySelector(container_selector);
     this.$moduleElement = null;
     
@@ -37,20 +38,21 @@
   };
   
   Sidplay.prototype._dispatchNext = function() {
-    if (this.$moduleElement !== null && this._transactions.length > 0)
+    if (this.$moduleElement !== null && this._transactionInProgress === null && this._transactions.length > 0)
     {
-      // Send oldest message
-      this.$moduleElement.postMessage(this._transactions[0].message);
+      // No transaction in progress. Send oldest message
+      this._transactionInProgress = this._transactions.shift();
+      this.$moduleElement.postMessage(this._transactionInProgress.message);
     }
   };
   
   Sidplay.prototype._messageReceived = function (msg) {
-    // Received a message from the module.
-    var transaction = this._transactions.shift();
-    if (transaction.callback) {
+    // Received a reply from the module.
+    if (this._transactionInProgress.callback) {
       // callback supplied,
-      transaction.callback(msg.data);
+      this._transactionInProgress.callback(msg.data);
     }
+    this._transactionInProgress = null;
     this._dispatchNext();
   };
   
@@ -65,11 +67,10 @@
         },
         callback : callback
       });
-    // First message?
+
+    // Dispatch if allowed
+    this._dispatchNext();
     
-    if (this._transactions.length == 1) {
-      this._dispatchNext();
-    }
   };
   
   // PUblic functions

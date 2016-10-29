@@ -5,8 +5,29 @@
     
   }
   
-  LocalFileStorage.prototype.LoadFile = function( callback )
-  {
+  LocalFileStorage.prototype.LoadFileEntry = function(fileEntry, callback) {
+    // Retrieve appropriate path name for displaying
+    
+    chrome.fileSystem.getDisplayPath(fileEntry, function(filename) {
+      fileEntry.file(function(file) {
+        var reader = new FileReader();
+        
+        reader.onError = function() {
+          callback( filename, undefined);
+        };
+        
+        reader.onloadend = function(e) {
+          callback(filename, e.target.result);
+        };
+        
+        reader.readAsArrayBuffer(file);
+      });
+    });
+  };
+  
+  LocalFileStorage.prototype.SelectFile = function( callback ) {
+    var that = this;
+    
     chrome.fileSystem.chooseEntry( {
       type: 'openFile',
       accepts: [
@@ -17,24 +38,7 @@
                 ],
       acceptsAllTypes: true
     }, function(fileEntry) {
-      
-      // Retrieve appropriate path name for displaying
-      
-      chrome.fileSystem.getDisplayPath(fileEntry, function(filename) {
-        fileEntry.file(function(file) {
-          var reader = new FileReader();
-          
-          reader.onError = function() {
-            callback( filename, undefined);
-          };
-          
-          reader.onloadend = function(e) {
-            callback(filename, e.target.result);
-          };
-          
-          reader.readAsArrayBuffer(file);
-        });
-      });
+      that.LoadFileEntry(fileEntry, callback);
     });
   };
   

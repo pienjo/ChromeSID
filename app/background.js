@@ -1,13 +1,46 @@
-chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create("index.html", {
-    id: 'ChromeSIDMain',
-    bounds : {
-      width : 400,
-      height: 400,
-      left: 100,
-      top: 100,
-    }
-  });
+var mainWindow = null; // Only allow a single instance to be opened
+
+chrome.app.runtime.onLaunched.addListener(function(launchData) {
+  var filesToOpen = [];
+  if (launchData && launchData.items) {
+    launchData.items.forEach(function (e) {
+      filesToOpen.push(e.entry);
+    });
+  }
+  
+  if (mainWindow === null) {
+      // Main window not opened yet.
+      chrome.app.window.create("index.html", {
+      id: 'ChromeSIDMain',
+      bounds : {
+        width : 400,
+        height: 400,
+        left: 100,
+        top: 100,
+      }
+    },
+      function(win) {
+        mainWindow = win;
+        mainWindow.ChromeSidFiles = filesToOpen;
+        
+        // Register close handler so a next invocation will open a new dailog.
+        mainWindow.onClosed.addListener(function() {
+          mainWindow = null;
+        });
+      });
+  }
+  else {
+    // Window is already open.
+    mainWindow.ChromeSidFiles = filesToOpen; // Copy file entries (urgh)
+    // Send message to window to re-check the arguments
+    chrome.runtime.sendMessage({
+      action: 'checkForFileArguments'
+    });
+    
+    // Draw attention to the window
+    mainWindow.drawAttention();
+  }
+  
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, callback){

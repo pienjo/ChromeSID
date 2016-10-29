@@ -44,10 +44,28 @@
   MainController.prototype._onLoad = function() {
     var that = this;
     
-    this._storage.LoadFile(function (filename, contents) {
+    this._storage.SelectFile(function (filename, contents) {
       that._model.Load(filename, contents, function(tuneInfo) {
         that._view.RenderTuneInfo(tuneInfo);
       });
+    });
+  };
+  
+  MainController.prototype.PlayFileEntry = function(fileEntry) {
+    var that = this;
+    
+    this._storage.LoadFileEntry( fileEntry, function (filename, contents ) {
+      
+      if (contents !== undefined ) {
+        // Successfully read file contents. Load and play it.
+        that._model.Load(filename, contents, function(tuneInfo) {
+          that._model.Play(function() {
+            // Update view
+            that._view.RenderTuneInfo(tuneInfo);
+          });
+        });
+        
+      }
     });
   };
   
