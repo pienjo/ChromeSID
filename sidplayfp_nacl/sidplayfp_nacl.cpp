@@ -10,6 +10,7 @@
 #include "math.h"
 #include <string.h>
 #include <chrono>
+#include <sstream>
 
 SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(instance)
   , mAudio(nullptr)
@@ -609,7 +610,17 @@ pp::Var SidplayfpInstance::HandleLoad(const pp::Var &pData)
     mLoadedTune->selectSong(0);
 
     returnValue.Set("status", "OK");
-    
+   
+    // The MD5 checksum as used by the songlengths database is NOT the MD5
+    // sum over the entire file, but a partial MD5 over the contained
+    // memory dump plus a number of fields in the header. Also, it's not
+    // documented. 
+
+    // Rather than trying to piece this together in javascript, just return 
+    // libsidplay's interpretation of it.
+
+    returnValue.Set("md5sum", mLoadedTune->createMD5(nullptr));
+
     const SidTuneInfo *tuneInfo = mLoadedTune->getInfo();
     returnValue.Set("nrSongs", (int) tuneInfo->songs());
     returnValue.Set("defaultSong", (int) tuneInfo->startSong());
