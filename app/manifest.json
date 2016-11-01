@@ -5,7 +5,14 @@
   "icons":{
     "128": "icon_128.png"
   },
-  "permissions": ["fileSystem", "storage"],
+  "permissions": [
+    {
+      "fileSystem" : [
+        "retainEntries",
+        "directory"
+        ]
+    },
+    "storage"],
   "app": {
     "background": {
       "scripts": [ "background.js"]

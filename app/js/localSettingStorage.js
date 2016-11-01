@@ -2,62 +2,43 @@
   'use strict';
   
   function LocalSettingStorage( name ) {
-    this._dbName = name;
     
-    chrome.storage.local.get(name, function(storage){
-      if (!storage || !(name in storage)) {
-        storage = {};
-        storage[name] = {};
-        chrome.storage.local.set(storage, function() {
-          
-        });
-      }
-    });
   }
   
-  LocalSettingStorage.prototype.LoadAll = function(callback) {
+  LocalSettingStorage.prototype.GetPlayerSettings = function(callback) {
     callback = callback || function() { };
-    var that = this;
     
-    chrome.storage.local.get(that._dbName, function(storage) {
-  	  if (storage && (that._dbName in storage))
-  	    storage = storage[that._dbName];
-  	  else
-  	    storage = {};
-  	  callback(storage);
+    chrome.storage.local.get("playerSettings", function(storage) {
+  	  callback(storage && storage.playerSettings || {});
     });
   };
 
-  LocalSettingStorage.prototype.ReplaceAll = function(data, callback) {
+  LocalSettingStorage.prototype.SetPlayerSettings = function(data, callback) {
     callback = callback || function() { };
     data = data || { };
     
-    var that = this;
-    
     // Api is asymmetrical :X
-    var storage = { };
-    storage[that._dbName] = data;
+    var storage = { 'playerSettings' : data};
     
     chrome.storage.local.set( storage, function() {
       callback();
     });
   };
   
-  LocalSettingStorage.prototype.Merge = function(data, callback) {
-    
-    // Merge with existing
-    var that = this;
+  LocalSettingStorage.prototype.SetHVSCRootId = function (data, callback) {
     callback = callback || function() { };
     
-    that.LoadAll( function (currentData) {
-      // Merge in new data, replacing existing.
-      for(var memberName in data) {
-        currentData[memberName] = data[memberName];
-      }
-      
-      that.ReplaceAll( data, function() {
-        callback();
-      });
+    var storage = { 'hvscRootId' : data };
+    chrome.storage.local.set(storage, function() {
+      callback();
+    });
+  };
+  
+  LocalSettingStorage.prototype.GetHVSCRootId = function(callback) {
+    callback = callback || function() { };
+    
+    chrome.storage.local.get('hvscRootId', function (storage) {
+      callback(storage && storage.hvscRootId);
     });
   };
   

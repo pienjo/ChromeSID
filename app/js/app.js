@@ -5,9 +5,10 @@
     this.mainView = new app.MainView();
     this.tuneTemplate = new app.TuneInfoTemplate();
     this.sidplayer = new app.Sidplay("#chromeSidContainer");
-    this.localFileStorage = new app.LocalFileStorage();
     this.localSettingStorage = new app.LocalSettingStorage("chromesid");
-    this.mainModel = new app.MainModel(this.sidplayer, this.tuneTemplate, this.localSettingStorage);
+    this.localFileStorage = new app.LocalFileStorage(this.localSettingStorage);
+    this.songLengthDB = new app.SongLengthDB(this.localFileStorage);
+    this.mainModel = new app.MainModel(this.sidplayer, this.tuneTemplate, this.localSettingStorage, this.songLengthDB);
     this.mainController = new app.MainController(this.mainView, this.mainModel, this.localFileStorage);
     
     this.CheckForFileArguments();

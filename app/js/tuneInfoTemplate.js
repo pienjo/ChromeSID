@@ -1,33 +1,12 @@
 (function (window) {
 	'use strict';
 	// Export to window
-	var htmlEscapes = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		'\'': '&#x27;',
-		'`': '&#x60;'
-	};
-
-	var escapeHtmlChar = function (chr) {
-		return htmlEscapes[chr];
-	};
-
-	var reUnescapedHtml = /[&<>"'`]/g,
-	    reHasUnescapedHtml = new RegExp(reUnescapedHtml.source);
-
-	var escape = function (string) {
-		return (string && reHasUnescapedHtml.test(string))
-			? string.replace(reUnescapedHtml, escapeHtmlChar)
-			: string;
-	};
-
+	
   function TuneInfoTemplate()
   {
 		this._subtuneTemplate
 		=	'<option value="{{subTuneId}}">'
-		+		'{{subTuneId}} : {{title}} - {{author}} &copy; {{copyright}} ( {{model}} {{speed}} )'
+		+		'{{subTuneId}} ({{runtime}}): ( {{clock}} {{speed}} )'
 		+	'</option>';
   }
   
@@ -38,13 +17,16 @@
     for (index = 0; index < data.length; ++index) {
       var template = this._subtuneTemplate;
       var subtune = data[index];
-      template = template.replace(/\{\{subTuneId\}\}/g, index + 1);
-      template = template.replace('{{title}}', escape(subtune.songInfos[0]) );
-      template = template.replace('{{author}}', escape(subtune.songInfos[1]) );
-      template = template.replace('{{copyright}}', escape(subtune.songInfos[2]));
-      template = template.replace('{{model}}', subtune.sidModel1);
-      template = template.replace('{{speed}}', subtune.clockSpeed);
+      var runtime = "??:??";
       
+      if (subtune.songLength > 0) {
+        runtime = Math.floor(subtune.songLength / 60) + ":" + ("00" + subtune.songLength % 60).substr(-2);
+      }
+      
+      template = template.replace(/\{\{subTuneId\}\}/g, index + 1);
+      template = template.replace('{{clock}}', subtune.songSpeed);
+      template = template.replace('{{speed}}', subtune.clockSpeed);
+      template = template.replace('{{runtime}}', runtime);
       rendered = rendered + template;
     }
     

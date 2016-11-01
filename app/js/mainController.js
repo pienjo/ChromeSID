@@ -31,6 +31,10 @@
     this._view.Bind("settings", function() {
       that._onSettingsPressed();
     });
+
+    this._view.Bind("setHvscRoot", function() {
+      that._onSetHvscRootPressed();
+    });
     
     // Query the player for the version, to indicate activity
     this._view.SetStatus("Initializing player...");
@@ -135,6 +139,12 @@
       });
     });
       
+  };
+  
+  MainController.prototype._onSetHvscRootPressed = function() {
+    this._storage.SelectHVSCRoot(function() {
+      
+    });
   };
   
   MainController.prototype.OnSettingsApplied = function(newConfig) {

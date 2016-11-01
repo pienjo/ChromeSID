@@ -1,18 +1,19 @@
 (function (window) {
   'use strict';
-  function MainModel(player, template, storage) {
+  function MainModel(player, template, storage, songLengthDB) {
     var that = this;
     
     this._player = player;
     this._template = template;
     this._storage = storage;
+    this._songLengthDB = songLengthDB;
     
     this._tuneInfo = undefined;
     this._tuneFilename = undefined;
     this._config = undefined;
     
     // Retrieve settings from local storage
-    storage.LoadAll(function(config) {
+    storage.GetPlayerSettings(function(config) {
       // Update player's setting
       that._player.SetConfig(config, function (newConfig) {
         that._config = newConfig;
@@ -25,13 +26,30 @@
     var that = this;
     
     this._player.Load( contents, function(infoObj) {
-            that._tuneFilename = filename;
-            that._tuneInfo = infoObj;
-            callback({
-                "filename" : filename,
-                "subtunes" : that._template.showSubtunes(infoObj.songs),
-                "defaultSong": infoObj.defaultSong
-              });
+            // Retrieve song length
+            that._songLengthDB.GetSongLength(infoObj && infoObj.md5sum, function (songlengths) {
+              songlengths = songlengths || [];
+              // Merge in lengths
+              for(var idx = 0; idx < infoObj.songs.length; ++idx) {
+                infoObj.songs[idx].songLength = songlengths[idx] || -1;
+              }
+              that._tuneFilename = filename;
+              that._tuneInfo = infoObj;
+              callback({
+                  "filename" : filename,
+                  "compatibility" : infoObj.compatibility,
+                  "format" : infoObj.format,
+                  "loadaddr" : infoObj.loadAddr,
+                  "initaddr" : infoObj.initAddr,
+                  "playaddr" : infoObj.playAddr,
+                  "sidModel" : infoObj.sidModel1,
+                  "title"    : infoObj.songInfos[0] || "",
+                  "author"   : infoObj.songInfos[1] || "",
+                  "copyright": infoObj.songInfos[2] || "",
+                  "subtunes" : that._template.showSubtunes(infoObj.songs),
+                  "defaultSong": infoObj.defaultSong
+                });
+            });
           });
   };
   
@@ -79,7 +97,7 @@
     
     this._player.SetConfig(config, function(newConfig) {
       that._config = newConfig;
-      that._storage.ReplaceAll( newConfig, function() {
+      that._storage.SetPlayerSettings( newConfig, function() {
         callback(newConfig);
       });
     });

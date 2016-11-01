@@ -9,12 +9,25 @@
     <div id="controls">
       <p id="status">Starting...</p>
       <p id="playerstatus"></p>
-      <button id="settingsButton">Settings..</button><br>
+      <button id="settingsButton">Settings..</button>
+      <button id="hvscRootButton">HVSC Root...</button><br>
       <button id="loadButton">Load...</button>
       <button id="playButton">Play</button>
       <button id="pauseResumeButton">Pause</button>
     </div>
-    <p id="filename"></p>
+    <table>
+      <tr><th>Filename</th><td id="filename"></td></tr>
+      <tr><th>Format</th><td id="format"></td></tr>
+      <tr><th>Title</th><td id="title"></td></tr>
+      <tr><th>Author</th><td id="author"></td></tr>
+      <tr><th>Copyright</th><td id="copyright"></td></tr>
+      <tr><th>SID model</th><td id="sidmodel"></td></tr>
+      <tr><th>Compatibility</th><td id="compatibility"></td></tr>
+      <tr><th>Load address</th><td id="loadaddr"></td></tr>
+      <tr><th>Init address</th><td id="initaddr"></td></tr>
+      <tr><th>Play addresss</th><td id="playaddr"></td></tr>
+    </table>
+    
     <select id="subtunes">
     </select>
     <script src="js/tuneInfoTemplate.js"></script>
@@ -24,6 +37,7 @@
     <script src="js/sidplay.js"></script>
     <script src="js/mainView.js"></script>
     <script src="js/mainController.js"></script>
+    <script src="js/songLengthDB.js"></script>
     <script src="js/app.js"></script>
   </body>
   

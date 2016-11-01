@@ -356,12 +356,6 @@ namespace
     if (!subtuneInfo)
       return returnValue;
 
-
-    returnValue.Set("isStereo", subtuneInfo->isStereo());
-    returnValue.Set("loadAddr", subtuneInfo->loadAddr());
-    returnValue.Set("initAddr", subtuneInfo->initAddr());
-    returnValue.Set("playAddr", subtuneInfo->playAddr());
-  
     switch(subtuneInfo->songSpeed())
     {
       case SidTuneInfo::SPEED_VBI:
@@ -371,23 +365,6 @@ namespace
         returnValue.Set("songSpeed", "CIA 1 timer A");
         break;
     }
-    
-    const char *model = "unknown";
-    switch(subtuneInfo->sidModel1())
-    {
-      case SidTuneInfo::SIDMODEL_UNKNOWN:
-        break;
-      case SidTuneInfo::SIDMODEL_ANY:
-        model = "any";
-        break;
-      case SidTuneInfo::SIDMODEL_6581:
-        model = "6581";
-        break;
-      case SidTuneInfo::SIDMODEL_8580:
-        model = "8580";
-        break;
-    }
-    returnValue.Set("sidModel1", model);
 
     const char *clock = "unknown";
     switch(subtuneInfo->clockSpeed())
@@ -406,13 +383,6 @@ namespace
     }
     returnValue.Set("clockSpeed", clock);
     
-    pp::VarArray songInfos;
-    for (unsigned int i = 0; i < subtuneInfo->numberOfInfoStrings(); ++i)
-    {
-      songInfos.Set(i, subtuneInfo->infoString(i));
-    }
-
-    returnValue.Set("songInfos", songInfos);
     return returnValue;
   }
 }
@@ -626,6 +596,28 @@ pp::Var SidplayfpInstance::HandleLoad(const pp::Var &pData)
     returnValue.Set("defaultSong", (int) tuneInfo->startSong());
     returnValue.Set("format", tuneInfo->formatString());
     
+    returnValue.Set("isStereo", tuneInfo->isStereo());
+    returnValue.Set("loadAddr", tuneInfo->loadAddr());
+    returnValue.Set("initAddr", tuneInfo->initAddr());
+    returnValue.Set("playAddr", tuneInfo->playAddr());
+  
+    const char *model = "unknown";
+    switch(tuneInfo->sidModel1())
+    {
+      case SidTuneInfo::SIDMODEL_UNKNOWN:
+        break;
+      case SidTuneInfo::SIDMODEL_ANY:
+        model = "any";
+        break;
+      case SidTuneInfo::SIDMODEL_6581:
+        model = "6581";
+        break;
+      case SidTuneInfo::SIDMODEL_8580:
+        model = "8580";
+        break;
+    }
+    returnValue.Set("sidModel1", model);
+
     switch (tuneInfo->compatibility())
     {
       case SidTuneInfo::COMPATIBILITY_C64:
@@ -641,6 +633,14 @@ pp::Var SidplayfpInstance::HandleLoad(const pp::Var &pData)
         returnValue.Set("compatibility", "C64 BASIC required");
         break;
     }
+
+    pp::VarArray songInfos;
+    for (unsigned int i = 0; i < tuneInfo->numberOfInfoStrings(); ++i)
+    {
+      songInfos.Set(i, tuneInfo->infoString(i));
+    }
+
+    returnValue.Set("songInfos", songInfos);
 
     pp::VarArray songs;
     for (uint32_t i = 0; i < tuneInfo->songs(); ++i)
