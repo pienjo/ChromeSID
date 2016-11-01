@@ -38,6 +38,7 @@ class SidplayfpInstance : public pp::Instance
     // Audio resource
     pp::Audio *mAudio;
     uint32_t mSampleSize;
+    uint32_t mFadeoutLength; // # buffers used to fade out
 
     // Audio queue
     class AudioQueueEntry
@@ -86,7 +87,10 @@ class SidplayfpInstance : public pp::Instance
     // Tune
     std::shared_ptr<SidTune> mLoadedTune;
     std::shared_ptr<SidTune> mPlayingTune;
+    
     int mCurrentSubtune;
+    int mExpectedSongLength; // must be supplied by caller.
+    bool mFadeOutAfterSongEnd;
 
     std::atomic<uint32_t> mFramesPlayed;
     
@@ -95,6 +99,7 @@ class SidplayfpInstance : public pp::Instance
       STOPPED,
       PAUSED,
       PLAYING,
+      DRAINING,
       FLUSHING_RESUMEPLAY,
       FLUSHING_STOP,
     };

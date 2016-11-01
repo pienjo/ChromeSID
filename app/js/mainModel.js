@@ -62,11 +62,11 @@
   };
   
   MainModel.prototype.Play = function(callback) {
-    this._player.Play(null, callback);
+    this.SelectSubtune(this._tuneInfo.defaultSong, callback);
   };
   
   MainModel.prototype.SelectSubtune = function( subtuneId, callback) {
-    this._player.Play(subtuneId, callback);
+    this._player.Play(subtuneId, this._tuneInfo.songs[subtuneId - 1].songLength, callback);
   };
   
   MainModel.prototype.PauseResume = function( callback ) {

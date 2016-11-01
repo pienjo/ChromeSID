@@ -95,11 +95,8 @@
     this._sendCommand("setconfig", config, callback);
   };
   
-  Sidplay.prototype.Play = function(subtuneId, callback) {
-    if (subtuneId !== null)
-      this._sendCommand("play", { subtuneId : subtuneId }, callback);
-    else
-      this._sendCommand("play", null, callback);
+  Sidplay.prototype.Play = function(subtuneId, songLength, callback) {
+    this._sendCommand("play", {subtuneId : subtuneId, songlength : songLength }, callback);
   };
   
   Sidplay.prototype.PauseResume = function(callback) {

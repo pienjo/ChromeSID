@@ -8,6 +8,7 @@
     this.$forceSidModel= document.querySelector("#forceSidModel");
     this.$forceC64Model= document.querySelector("#forceC64Model");
     this.$filterEnabled= document.querySelector("#filterEnabled");
+    this.$fadeOutAfterSongEnd = document.querySelector("#fadeOutAfterSongEnd");
     this.$resampling=document.querySelector("#resampling");
     this.$applyButton=document.querySelector("#applyButton");
     this.$document=document;
@@ -43,6 +44,7 @@
     this.$forceC64Model.checked = config.forceC64Model;
     this.$forceSidModel.checked = config.forceSidModel;
     this.$filterEnabled.checked = config.filterEnabled;
+    this.$fadeOutAfterSongEnd.checked = config.fadeOutAfterSongEnd;
     this.$resampling.checked = config.resampling;
   };
   
@@ -83,7 +85,7 @@
         newConfig.forceSidModel= that.$forceSidModel.checked;
         newConfig.filterEnabled= that.$filterEnabled.checked;
         newConfig.resampling= that.$resampling.checked;
-        
+        newConfig.fadeOutAfterSongEnd = that.$fadeOutAfterSongEnd.checked;
         handler(newConfig);
       });
     }

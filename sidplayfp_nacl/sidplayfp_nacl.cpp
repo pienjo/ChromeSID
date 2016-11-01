@@ -2,6 +2,7 @@
 #include "sidplayfp/SidInfo.h"
 #include "sidplayfp/SidTune.h"
 #include "sidplayfp/SidTuneInfo.h"
+#include "sidplayfp/mixer.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "rom/basic_rom.c"
@@ -21,6 +22,9 @@ SidplayfpInstance::SidplayfpInstance(PP_Instance instance ) : pp::Instance(insta
   , mBuffersDecoded(0)
   , mBuffersPlayed(0)
   , mDestructing(false)
+  , mCurrentSubtune(0)
+  , mExpectedSongLength(INT_MAX)
+  , mFadeOutAfterSongEnd(false)
   , mPlayerStatus(STOPPED)
   , mFilterEnabled(true)
   , mReSIDfp_builder("ReSIDfp")
@@ -100,16 +104,21 @@ void SidplayfpInstance::DecodingLoop()
       }
 
       delay = false; // There is work to do.
-      
-      mEngine.play( queueEntry->mData, 2 * mSampleSize);
-/*
-      // duplicate channels
-      for (int i = mSampleSize - 1; i > 0; i--)
+      if ( mFadeOutAfterSongEnd && mBuffersDecoded >= mExpectedSongLength)
       {
-        queueEntry->mData[ 2 * i + 1] = v;
-        queueEntry->mData[ 2 * i ] = v;
+	// Determine new volume
+	int newVolume = Mixer::VOLUME_MAX - (Mixer::VOLUME_MAX * (mBuffersDecoded - mExpectedSongLength + 1)) / mFadeoutLength;
+
+	if (newVolume <= 0) // Reached end
+	{
+	  newVolume = 0;
+	  mPlayerStatus = DRAINING; // Don't decode any further.
+	}
+	mEngine.setVolume(newVolume, newVolume);
       }
-*/
+
+      mEngine.play( queueEntry->mData, 2 * mSampleSize);
+      
       mBuffersDecoded++;
       
       mPlaybackQueue->push(queueEntry);
@@ -152,6 +161,9 @@ bool SidplayfpInstance::Init(uint32_t argc, const char *argn[], const char *argv
   // Retrieve recommended sample frame count
   
   mSampleSize = pp::AudioConfig::RecommendSampleFrameCount(this,PP_AUDIOSAMPLERATE_44100, 8192); // Try to use a large frame count. 8192 samples @ 44100 KHz corresponds to about 185 ms. 
+
+  // Fade out over 5 seconds.
+  mFadeoutLength = (uint32_t)ceil(5. * 44100. / (double)mSampleSize); 
 
   // Allocate a buffer of 5 sec.
   mNrBuffers = (uint32_t)ceil(5. * 44100. / (double)mSampleSize);
@@ -197,6 +209,15 @@ void SidplayfpInstance::GetAudioData(int16_t *pSamples, uint32_t buffer_size)
     case PLAYING:
       mPlaybackQueue->pop(queueEntry);
       break;
+    case DRAINING:
+      mPlaybackQueue->pop(queueEntry);
+      if (queueEntry == nullptr)
+      {
+	mBuffersPlayed = 0;
+	mBuffersDecoded = 0;
+	mPlayerStatus = STOPPED;
+      }
+      break;
     case FLUSHING_RESUMEPLAY:
     case FLUSHING_STOP:
     {
@@ -230,24 +251,44 @@ pp::Var SidplayfpInstance::HandlePlay(const pp::Var &pData)
   bool status = true;
 
   int subtuneToLoad = 0; // Default to "default starting song"
-
+  int expectedPlaytime = INT_MAX;
   // see if a subtuneID has been supplied.
   if (pData.is_dictionary())
   {
-    pp::Var contents = pp::VarDictionary(pData).Get("subtuneId");
+    pp::VarDictionary dict(pData);
+
+    pp::Var contents = dict.Get("subtuneId");
     if (contents.is_number())
     {
       subtuneToLoad = contents.AsInt();
     } 
+    
+    contents = dict.Get("songlength");
+    if (contents.is_number())
+    {
+      expectedPlaytime = contents.AsInt();
+
+      // Time is in seconds, convert to frames.
+      expectedPlaytime = (expectedPlaytime * 44100 / mSampleSize);
+
+      if (expectedPlaytime < 0)
+	expectedPlaytime = INT_MAX;
+    }
   }
+
   mCurrentSubtune = mLoadedTune->selectSong(subtuneToLoad);
+  mExpectedSongLength = expectedPlaytime;
 
 // Switch to new track
   
   // Lock has been taken, so decoding thread is not active.
   mPlayingTune = mLoadedTune;
   mBuffersDecoded = 0;
-  bool wasPlaying = (mPlayerStatus == PLAYING || mPlayerStatus == PAUSED);
+  bool wasPlaying = (mPlayerStatus == PLAYING || mPlayerStatus == PAUSED || mPlayerStatus == DRAINING);
+
+  // Reset volume
+
+  mEngine.setVolume(Mixer::VOLUME_MAX, Mixer::VOLUME_MAX);
 
   if (mEngine.load(mPlayingTune.get()))
   {
@@ -271,10 +312,12 @@ pp::Var SidplayfpInstance::HandlePauseResume(const pp::Var &)
     
   playerStatus status = mPlayerStatus;
 
-  if (status == PLAYING)
+  if (status == PLAYING || status == DRAINING)
     mPlayerStatus = PAUSED;
   else if (status == PAUSED)
-    mPlayerStatus = PLAYING;
+    mPlayerStatus = PLAYING; // In case the player was DRAINING,
+                             // it'll just decode an extra silence frame.
+			     // Noone will notice (TM)
 
   return pp::Var();
 }
@@ -302,6 +345,9 @@ pp::Var SidplayfpInstance::HandlePlayerInfo(const pp::Var &)
       break;
     case PLAYING:
       audioInfo.Set("status", "PLAYING");
+      break;
+    case DRAINING:
+      audioInfo.Set("status", "DRAINING");
       break;
     case FLUSHING_RESUMEPLAY:
       audioInfo.Set("status", "FLUSHING_RESUMEPLAY");
@@ -420,7 +466,7 @@ pp::Var SidplayfpInstance::HandleGetConfig(const pp::Var &)
   returnValue.Set("sidEmulation", currentConfig.sidEmulation->name());
   returnValue.Set("filterEnabled", mFilterEnabled); 
   returnValue.Set("resampling", currentConfig.samplingMethod == SidConfig::RESAMPLE_INTERPOLATE);
-
+  returnValue.Set("fadeOutAfterSongEnd", mFadeOutAfterSongEnd);
   return returnValue;
 }
 
@@ -522,6 +568,12 @@ pp::Var SidplayfpInstance::HandleSetConfig(const pp::Var &pData)
       {
 	newConfig.samplingMethod = (value.AsBool() ? SidConfig::RESAMPLE_INTERPOLATE : SidConfig::INTERPOLATE);
       }
+
+      value = dict.Get("fadeOutAfterSongEnd");
+      if (value.is_bool())
+      {
+	mFadeOutAfterSongEnd = value.AsBool();
+      }
     }
 
     restartPlayback = restartPlayback || 
@@ -535,7 +587,7 @@ pp::Var SidplayfpInstance::HandleSetConfig(const pp::Var &pData)
 
     if (restartPlayback)
     {
-      bool wasPlaying = mPlayerStatus == PLAYING || mPlayerStatus == PAUSED;
+      bool wasPlaying = mPlayerStatus == PLAYING || mPlayerStatus == PAUSED || mPlayerStatus == DRAINING;
       mEngine.stop();
 
       if (!mEngine.config(newConfig))
