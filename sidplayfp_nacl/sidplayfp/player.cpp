@@ -245,6 +245,11 @@ void Player::stop()
     }
 }
 
+void Player::setVolume(int_least32_t left, int_least32_t right)
+{
+  m_mixer.setVolume(left, right);
+}
+
 #ifdef PC64_TESTSUITE
     void Player::load(const char *file)
     {

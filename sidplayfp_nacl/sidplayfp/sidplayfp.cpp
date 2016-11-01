@@ -46,6 +46,11 @@ bool sidplayfp::config(const SidConfig &cfg)
     return sidplayer->config(cfg);
 }
 
+void sidplayfp::setVolume(int_least32_t left, int_least32_t right)
+{
+    return sidplayer->setVolume(left, right);
+}
+
 const SidConfig &sidplayfp::config() const
 {
     return sidplayer->config();

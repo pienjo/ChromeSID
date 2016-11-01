@@ -111,6 +111,8 @@ public:
     const SidInfo &info() const { return m_info; }
 
     bool config(const SidConfig &cfg);
+    
+    void setVolume(int_least32_t left, int_least32_t right);
 
     bool fastForward(unsigned int percent);
 

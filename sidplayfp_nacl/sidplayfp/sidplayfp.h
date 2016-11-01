@@ -74,6 +74,14 @@ public:
      * @return true on success, false otherwise.
      */
     bool config(const SidConfig &cfg);
+  
+    /**
+     * Adjusts mixer volume.
+     *
+     * #param left volume for left channel (0..Mixer::VOLUME_MAX)
+     * #param right volume for right channel (0..Mixer::VOLUME_MAX)
+     */
+    void setVolume(int_least32_t left, int_least32_t right);
 
     /**
      * Error message.
