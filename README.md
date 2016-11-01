@@ -14,6 +14,7 @@ For the record: I did not write the actual SID emulation; I merely wrote a small
 * Allows the SID- and C64 model to be overruled
 * SID filters and resampling can be disabled to reduce CPU load
 * Allows playing .sid and .psid files from the ChromeOS file browser
+* Supports the HVSC "Songlengths" database, and supports fading out at the (expected) end of tune.
 
 ## Known problems
 
