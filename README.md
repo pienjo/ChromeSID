@@ -20,7 +20,7 @@ For the record: I did not write the actual SID emulation; I merely wrote a small
 
 * The "user interface" isn't worth the name. It only contains the absolute minimum controls, and no design was involved.
 * Performance is lackluster; this is possibly a consequence of using the 'portable' pNacl framework instead of a native module.
-* it is terribly bare-bones. No STIL entries, no song lengths, no channel selection.
+* No STIL entries, no song lengths, no channel selection.
 
 ## Building
 For build instructions: See BUILDING
