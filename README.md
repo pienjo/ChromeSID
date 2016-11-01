@@ -6,7 +6,7 @@ I started this project as an excuse to tinker with Chrome extensions, Javascript
 * a pNaCl module, running the actual simulation, based on libsidplayfp. See sidplayfp_nacl/README for details.
 * a Chrome extension that uses the above module.
 
-For the record: I did not write the actual SID emulation; I merely wrote a small wrapper around it. At the moment, the extension is far from feature-complete and downright ugly, but it has reached the point that it looks viable. 
+For the record: I did not write the actual SID emulation; I merely wrote a small wrapper around it. At the moment, the extension isn't quite feature-complete (and looks downright ugly), but it has reached the point that it looks viable. 
 
 ## Features
 
